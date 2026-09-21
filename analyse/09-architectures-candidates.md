@@ -1,11 +1,7 @@
-# Dix-huit architectures candidates — pseudo-code seul
+# Dix-huit architectures candidates
 
 Chacune décrit une façon d'enchaîner les fonctions unitaires du système pour
-produire un plan. Elles ont été produites indépendamment, par des auteurs qui
-ne se voyaient pas. L'ordre est aléatoire et ne porte aucune information.
-
-Seul le pseudo-code est reproduit ici : toute prose d'accompagnement a été
-retirée.
+produire un plan. 
 
 ---
 
