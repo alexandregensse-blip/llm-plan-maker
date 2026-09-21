@@ -1,24 +1,16 @@
-# Dix-huit architectures candidates
+# Dix-huit architectures candidates — pseudo-code seul
 
-Chacune décrit, en pseudo-code, une façon d'enchaîner les fonctions unitaires du
-système pour produire un plan. Elles ont été produites indépendamment, sans que
-leurs auteurs se voient. Leur ordre ici est aléatoire et ne porte aucune
-information : rien dans ce document n'indique d'où vient une architecture, ni
-quelles architectures partagent une origine.
+Chacune décrit une façon d'enchaîner les fonctions unitaires du système pour
+produire un plan. Elles ont été produites indépendamment, par des auteurs qui
+ne se voyaient pas. L'ordre est aléatoire et ne porte aucune information.
 
-Certaines architectures factorisent des blocs réutilisables ; ces blocs sont
-alors reproduits avec l'architecture qui les emploie, sous le titre
-« Briques utilisées ».
+Seul le pseudo-code est reproduit ici : toute prose d'accompagnement a été
+retirée.
 
 ---
 
 
 # Architecture 01 — Pipeline à sas
-
-
-**Principe en une phrase** : sept phases larges et strictement séquentielles (une par grande famille de préoccupation), chacune fermée par un contrôle de sortie, avec retours nommés vers la phase amont exactement responsable du défaut trouvé.
-
-### Pseudo-code
 
 ```
 PHASE 0 — CADRAGE
@@ -169,29 +161,10 @@ PHASE 6 — LIVRAISON
   RESTITUER_EN_BREF
 ```
 
-### Les boucles
-- **Retour interne** (Phase 0, Phase 5) : bouclage court dans la phase même, borné à 2 passages avant escalade vers `SUSPENDRE_ENQUETE_ET_DEMANDER`.
-- **Retour 1→0** (cadrage invalidé par un fait) : borné à 1 aller-retour.
-- **Retour 2→1** (décision bloquée par un fait manquant) : ciblé sur l'inconnue précise, borné par le nombre fini d'inconnues bloquantes (chaque passage en retire une définitivement grâce à `REUTILISER_ACQUIS`).
-- **Retour 3→2** (dépendance manquée) : borné par le nombre fini d'arêtes du graphe de décisions.
-- **Retour 4→3 / 4→2** (invariant violé) : borné par le nombre fini de chemins du plan.
-- **Retour 5→3 / 5→4 / 5→0** : chacun plafonné explicitement, avec un dernier recours vers l'utilisateur.
-- **Terminaison** : chaque retour retire un défaut précis et fini (fait, arête, chemin), jamais rouvert une fois réglé ; un plafond global par cible de retour empêche toute boucle infinie.
-
-### Fonctions appelées plusieurs fois
-`CHOISIR_MOYEN_DE_LEVEE`, `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT` (une fois par inconnue) ; `PRODUIRE_OPTIONS_DISTINCTES`, `ATTAQUER_UNE_OPTION`, `ARBITRER_A_L_AVEUGLE`, `CONSIGNER_CE_QUI_A_TRANCHE` (une fois par décision) ; `DEFINIR_ATTENDU_OBSERVABLE`, `DEFINIR_RETOUR_ARRIERE` (une fois par étape) ; `VERIFIER_COHERENCE_ENSEMBLE` (à granularité croissante : décisions, puis document entier) ; `DECIDER_D_OUVRIR_UN_AGENT` / `REDIGER_BRIEF_AGENT` (une fois par inconnue nécessitant un agent).
-
-### Fonctions laissées de côté
-`PARALLELISER_ENQUETE` et `ARRETER_ORCHESTRATION` : l'architecture garde l'enquête mono-fil par choix, elle n'ouvre pas de flotte d'agents à arrêter. `QUALIFIER_INDEPENDANCE_OBTENUE`, `DETECTER_ERREURS_CORRELEES` : l'isolement et l'arbitrage à l'aveugle sont appliqués mais jamais audités eux-mêmes — un choix délibéré de simplicité, documenté comme faiblesse.
-
----
-
 ---
 
 
 # Architecture 02 — Deux vagues et un filet de sécurité global
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION CONFRONTATION(question, dossier):
@@ -235,8 +208,6 @@ FONCTION CONFRONTATION(question, dossier):
 
     RETOURNER verdict
 ```
-
-### `CONSTITUER_DOSSIER_INITIAL(demande)` — construit les faits, jamais un verdict
 
 ```
 FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
@@ -286,8 +257,6 @@ FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
     RETOURNER dossier
 ```
 
-### `METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts, dossier)` — met en forme, puis vérifie avant d'émettre
-
 ```
 FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     actions = DERIVER_ACTIONS_DEPUIS_DECISIONS(verdicts_choix)
@@ -327,17 +296,6 @@ FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     RESTITUER_EN_BREF()
     RETOURNER plan
 ```
-
-Ces trois briques couvrent, à elles seules, la quasi-totalité des 129 identifiants. Ce qui suit montre, pour chaque architecture, **comment on arrive à `CONFRONTATION`, dans quel ordre, ce qui la déclenche, et comment un verdict peut rouvrir ce qui précède** — c'est là qu'elles diffèrent réellement.
-
----
-
-</details>
-
-
-**Principe** : on investit tout l'effort d'enquête en amont (une vague unique), on tranche PROBLÈME puis STRUCTURE une seule fois chacun, on confronte *tous* les choix litigieux ensemble en une seule salve aveugle, puis un unique audit global décide s'il faut *tout* refaire une fois — jamais de réouverture chirurgicale, seulement un retraitement complet borné à une seule répétition.
-
-### Pseudo-code
 
 ```
 FONCTION PLANIFIER(demande):
@@ -387,27 +345,10 @@ FONCTION PLANIFIER(demande):
         # on relance TOUT : problème, structure, choix — pas de reprise partielle
 ```
 
-### 3. Les boucles
-
-- **Boucle « deux vagues »** (la seule boucle de retour de cette architecture) : déclenchée uniquement par l'audit global final, jamais par un verdict individuel en cours de route. Remonte toujours jusqu'à la Vague 1 dans son ensemble (jamais une réouverture ciblée d'un seul nœud). Bornée *par construction* à `tentative == 2` : au deuxième échec, on n'essaie plus, on transfère la décision à l'utilisateur via `SOUMETTRE_ARBITRAGE_UTILISATEUR`.
-- **Boucle de levée d'inconnues en Vague 0** : bornée par la liste finie d'inconnues et par `DISTINGUER_INDETERMINE_ET_NON_CHERCHE` (qui empêche de chercher indéfiniment une inconnue déclarée indéterminable).
-- **Boucle de vérification finale** (à l'intérieur de `METTRE_EN_FORME_ET_CONTROLER`) : sert ici de *détecteur* qui alimente la boucle de retour, pas de correcteur local — dans cette architecture, on ne corrige jamais à la marge, on refait la vague.
-
-### 4. Fonctions appelées plusieurs fois
-
-`CONFRONTATION` (au moins 2 + N la première fois, jusqu'à deux fois ce total si redo) ; `CONTROLER_CONTENU_FINAL` / `CONTROLER_INTEGRITE_DOCUMENT` / `FAIRE_CONTROLER_PAR_UN_TIERS` / `VERIFIER_COHERENCE_ENSEMBLE` (une fois par tentative, donc au plus 2) ; `ORIENTER_CHOIX` et `DISTINGUER_CHOIX_ET_CONSEQUENCE` (une fois par tentative) ; `REUTILISER_ACQUIS` (au moment du redo, pour ne pas rejouer ce que l'audit n'a pas contesté) ; `CHOISIR_MOYEN_DE_LEVEE` / `MENER_VERIFICATION` (une fois par inconnue en Vague 0, et à nouveau si l'audit produit des faits nouveaux nécessitant vérification).
-
----
-
 ---
 
 
 # Architecture 03 — Colonne vertébrale contradictoire
-
-
-**Principe en une phrase** : à chaque niveau (faits, options, plan entier), le contrôle de sortie n'est pas un auto-diagnostic mais une véritable tentative de casser ce qui vient d'être produit, menée par un regard isolé de celui qui l'a produit — les mêmes primitives d'attaque (`ATTAQUER_*`, `ISOLER_LES_EVALUATIONS`, `QUALIFIER_INDEPENDANCE_OBTENUE`) sont réemployées à trois grains croissants.
-
-### Pseudo-code
 
 ```
 PHASE 0 — CADRAGE CONTESTÉ
@@ -546,23 +487,10 @@ PHASE 6 — LIVRAISON
   RESTITUER_EN_BREF
 ```
 
-### Les boucles
-- **Boucles de rattrapage classiques** (1→0, 2→1, 3→2, 4→3/2, 5→*) : même logique de ciblage et de terminaison monotone que dans A/B.
-- **Boucles d'audit d'indépendance** (Phase 1 sur les faits pivots, Phase 2 sur l'arbitrage, Phase 5 sur le tiers) : explicitement **plafonnées en nombre de rounds** (2, 2, 1) — spécificité de cette architecture. Une primitive d'attaque, contrairement à une case de checklist, peut toujours trouver quelque chose si on la laisse chercher indéfiniment ; le plafond est donc une pièce architecturale obligatoire, absente d'A et B. Au-delà du plafond, le défaut n'est pas rejoué : il est converti en résidu documenté (`QUALIFIER_INDEPENDANCE_OBTENUE("faible, acceptée")`, `SIGNALER_LES_LIMITES`, `STATUER_SUR_RISQUE_RESIDUEL`).
-- **Terminaison** : combinaison de l'argument monotone (défauts finis, retirés un par un) et du plafond explicite de rounds adversariaux.
-
-### Fonctions appelées plusieurs fois
-`ATTAQUER_TOUT_LE_CHAMP` : trois fois, à trois grains différents (le cadrage, le champ d'options d'une décision, les combinaisons de branches du plan) — signature de cette architecture. `ATTAQUER_UNE_OPTION` : une fois par option par décision. `ISOLER_LES_EVALUATIONS` / `QUALIFIER_INDEPENDANCE_OBTENUE` / `DETECTER_ERREURS_CORRELEES` : à trois étages distincts (fait, option, document) avec les mêmes primitives. `REFUSER_AUTO_CONFIRMATION` / `INTEGRER_RETOUR_AGENT` : à chaque retour d'agent, quel qu'il soit. `DECIDER_D_OUVRIR_UN_AGENT` / `REDIGER_BRIEF_AGENT` / `BORNER_UN_AGENT` : pour chaque investigation indépendante et pour la contre-lecture tierce.
-
-### Fonctions laissées de côté
-`AMORCER_DEPUIS_PLAN_EXISTANT` : même raison qu'en B, entrée par demande fraîche uniquement. `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : utilisé mais volontairement secondaire — cette architecture ne s'organise pas par découpage/fusion de sous-plans comme B, mais par étages d'épreuve contradictoire ; le concept de "vague rouverte" de B n'existe pas ici, remplacé par les plafonds de rounds.
-
 ---
 
 
 # Architecture 04 — Agenda piloté par un graphe de dépendances
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION CONFRONTATION(question, dossier):
@@ -606,8 +534,6 @@ FONCTION CONFRONTATION(question, dossier):
 
     RETOURNER verdict
 ```
-
-### `CONSTITUER_DOSSIER_INITIAL(demande)` — construit les faits, jamais un verdict
 
 ```
 FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
@@ -657,8 +583,6 @@ FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
     RETOURNER dossier
 ```
 
-### `METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts, dossier)` — met en forme, puis vérifie avant d'émettre
-
 ```
 FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     actions = DERIVER_ACTIONS_DEPUIS_DECISIONS(verdicts_choix)
@@ -698,17 +622,6 @@ FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     RESTITUER_EN_BREF()
     RETOURNER plan
 ```
-
-Ces trois briques couvrent, à elles seules, la quasi-totalité des 129 identifiants. Ce qui suit montre, pour chaque architecture, **comment on arrive à `CONFRONTATION`, dans quel ordre, ce qui la déclenche, et comment un verdict peut rouvrir ce qui précède** — c'est là qu'elles diffèrent réellement.
-
----
-
-</details>
-
-
-**Principe** : pas de paliers fixes — un graphe de points à trancher (1 nœud PROBLÈME, 1 nœud STRUCTURE, N nœuds CHOIX découverts au fil de l'eau) est traité par un agenda à priorité ; les confrontations indépendantes tournent en parallèle via des sous-agents ; un verdict invalide *exactement* les nœuds qui dépendaient du fait qu'il remet en cause, propagation dans les deux sens (amont et aval), jusqu'à un point fixe.
-
-### Pseudo-code
 
 ```
 FONCTION PLANIFIER(demande):
@@ -765,27 +678,10 @@ FONCTION PLANIFIER(demande):
     plan = METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier)
 ```
 
-### 3. Les boucles
-
-- **Boucle d'enrichissement local** (dossier insuffisant → lever → réempiler) : bornée car les inconnues sont en nombre fini et `DISTINGUER_INDETERMINE_ET_NON_CHERCHE` force à déclarer une inconnue vraiment indéterminable plutôt que de la relever indéfiniment.
-- **Boucle de propagation** (un verdict rouvre des nœuds amont/aval) : c'est la boucle de retour de cette architecture — elle peut remonter *jusqu'au PROBLÈME* depuis n'importe quel CHOIX, contrairement à une approche purement séquentielle qui ne remonte que d'un cran. Terminaison : le mémo `(nœud, fait)` interdit qu'un même motif rouvre deux fois le même nœud ; comme l'ensemble des faits est fini, le nombre total de réouvertures est fini.
-- **Boucle principale de l'agenda** : se termine quand elle est vide — c'est-à-dire quand plus aucun nœud n'est ni à enrichir, ni à trancher, ni à rouvrir : un vrai point fixe, pas un budget arbitraire.
-
-### 4. Fonctions appelées plusieurs fois
-
-`CONFRONTATION` (une fois par nœud, potentiellement rejouée après réouverture) ; `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` (à chaque priorisation d'agenda *et* à chaque insertion d'un nouveau nœud CHOIX) ; `DECIDER_D_OUVRIR_UN_AGENT` / `BORNER_UN_AGENT` / `REDIGER_BRIEF_AGENT` / `INTEGRER_RETOUR_AGENT` (une fois par domaine parallèle, potentiellement nombreuses fois) ; `REUTILISER_ACQUIS` (à chaque réouverture partielle, pour isoler ce qui ne dépend pas du fait invalidant) ; `NOMMER_FAIT_QUI_FERAIT_BASCULER` (à chaque verdict, sert de déclencheur de propagation).
-
----
-
 ---
 
 
 # Architecture 05 — La file de travail pilotée par les dépendances
-
-
-**Principe en une phrase :** il n'y a pas de phases fixes ; une seule file de priorité contient tous les items ouverts (inconnues, exigences tacites à vérifier, décisions), et l'on traite à chaque tour l'item de plus fort impact, la résolution d'un item débloquant et repoussant dans la file les items qui en dépendaient — le plan émerge de l'épuisement de la file, pas d'un enchaînement de blocs.
-
-### Pseudo-code
 
 ```
 INITIALISATION
@@ -921,32 +817,10 @@ REDACTION ET CONTROLE FINAL
   RESTITUER_EN_BREF
 ```
 
-### Les boucles
-
-- **La boucle principale elle-même** est LA boucle de l'architecture — pas une exception locale. Déclenchée par : FILE non vide. Termine parce que chaque item traité est soit résolu (retiré définitivement), soit réinjecté avec un compteur de rebond qui augmente ; au-delà de 5 rebonds, un garde-fou force une sortie (`CONSTATER_IMPOSSIBILITE` ou `SUSPENDRE_ENQUETE_ET_DEMANDER`, qui attend une réponse humaine et ne boucle donc jamais côté système). La taille de FILE n'est pas monotone (un item peut en engendrer d'autres) mais elle est bornée par le nombre fini d'inconnues/décisions/exigences possibles issues du périmètre déjà délimité.
-- **Boucle de déblocage par dépendance** : quand une décision bute sur un fait manquant, elle se réinsère "en attente" derrière l'inconnue qu'elle a elle-même fait naître — c'est le mécanisme structurant de cette architecture (contrairement à une approche purement séquentielle où c'est un aller-retour entre phases nommées). Termine car le fait, une fois résolu, retire la condition de blocage de façon définitive.
-- **Boucle de retour depuis l'assemblage** : un échec sur les invariants ou la faisabilité ne redémarre pas une "phase" — il réinjecte un item dans FILE et relance la boucle principale, avec toute la machinerie de priorité qui s'applique aussi à cet item. Termine par le même mécanisme de compteur de rebond.
-- **Boucle du contrôle final** : bornée à 3 tours, mais chaque échec ne renvoie qu'un item précis dans FILE plutôt qu'une phase entière — granularité plus fine qu'en une autre approche.
-
-### Fonctions appelées plusieurs fois
-
-`CHOISIR_MOYEN_DE_LEVEE`, `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT`, `REFUSER_AUTO_CONFIRMATION` (un item "inconnue" à la fois) ; `ORDONNER_INCONNUES_SANS_ECARTER`/`QUALIFIER_PORTEE_DECISION` (à chaque tour, pour re-classer la file — c'est le cœur du mécanisme de priorité, donc littéralement appelée à chaque itération) ; `ATTAQUER_UNE_OPTION` (une fois par option de chaque décision) ; `FORMULER_QUESTION_ACTIONNABLE`/`SUSPENDRE_ENQUETE_ET_DEMANDER` (chaque fois qu'un item choisit la voie "question") ; `ARRETER_ORCHESTRATION` (après chaque vague d'agents, pour juger s'il faut continuer à paralléliser) ; `REUTILISER_ACQUIS` (systématiquement en tête de traitement de toute inconnue, pour éviter le travail redondant — fonction de garde appelée à quasiment chaque itération).
-
-### Ce qu'elle laisse de côté
-
-- `ISOLER_LES_EVALUATIONS`, `ARBITRER_A_L_AVEUGLE`, `QUALIFIER_INDEPENDANCE_OBTENUE`, `DETECTER_ERREURS_CORRELEES`, `CHOISIR_ANGLES_ATTAQUE`, `ATTAQUER_TOUT_LE_CHAMP` : le rituel contradictoire complet (séparation stricte des évaluations, arbitrage à l'aveugle) est disproportionné pour un item traité isolément dans une file — cette architecture optimise le débit et la couverture des dépendances, pas la rigueur contradictoire de chaque décision prise une à une. C'est un vrai renoncement, pas un oubli (voir "faiblesses" plus bas) ; c'est précisément le terrain de une autre approche.
-
----
-
 ---
 
 
 # Architecture 06 — Chaînage par dépendances
-
-
-**Principe** : construire un graphe de décisions entre l'état actuel et la cible, les ordonner par ce qu'elles conditionnent, et résoudre chaque nœud dans cet ordre, en ne rouvrant que les nœuds affectés quand une résolution ultérieure les remet en cause.
-
-### Pseudo-code
 
 ```
 # --- Phase 0 : recevabilité --------------------------------------------
@@ -1192,36 +1066,10 @@ PLACER_ET_NOMMER_LE_FICHIER()
 RESTITUER_EN_BREF()
 ```
 
-### Les boucles
-
-- **Boucle 1** (fidélité cible/besoin) : déclenchée par `VERIFIER_FIDELITE_CIBLE_BESOIN` négatif ; remonte à `FORMULER_CIBLE_OBSERVABLE` seul ; se termine dès qu'elle passe (pas de borne explicite car c'est une reformulation locale peu coûteuse, mais en pratique bornée par le fait qu'il n'existe qu'un nombre fini de reformulations raisonnables).
-- **Boucle 2** (externe, un tour par nœud) : structure la phase 3 entière ; se termine naturellement quand tous les nœuds sont traités dans l'ordre topologique — garantie par la taille finie du graphe.
-- **Boucle 3** (levée d'inconnue à l'intérieur d'un nœud) : déclenchée par une inconnue bloquante ou un choix qui révèle un fait manquant ; remonte au plus à l'intérieur du même nœud ; bornée à 2 tentatives puis `CONSTATER_IMPOSSIBILITE`.
-- **Boucle 4** (cohérence globale) : déclenchée par `VERIFIER_COHERENCE_ENSEMBLE` négatif après assemblage ; remonte uniquement au(x) nœud(s) fautif(s) et à leurs dépendants — jamais à l'amont ; bornée à 2 passes puis suspension vers l'utilisateur.
-- **Boucles 5, 6, 7, 8** : boucles de vérification locales (taille des étapes, invariants, couverture des points de blocage, faisabilité côté exécutant) — chacune corrige uniquement l'objet contrôlé et se termine dès que le contrôle passe, avec une borne (2 tentatives) sur celles qui pourraient buter sur un vrai désaccord (invariants, faisabilité).
-- **Boucle 9** (QA finale) : déclenchée par tout échec de `CONTROLER_CONTENU_FINAL` / `CONTROLER_INTEGRITE_DOCUMENT` / relecture tierce ; remonte à la phase concernée (pas de redémarrage complet) ; bornée à 2 passes puis `SUSPENDRE_ENQUETE_ET_DEMANDER`.
-
-Terminaison garantie : chaque boucle interne est bornée numériquement (2 tentatives), et la boucle externe (2) porte sur un ensemble fini et acyclique de nœuds — il ne peut donc pas y avoir de cycle infini, seulement une escalade vers `CONSTATER_IMPOSSIBILITE` ou `SUSPENDRE_ENQUETE_ET_DEMANDER`.
-
-### Fonctions appelées plusieurs fois
-
-- `CHOISIR_MOYEN_DE_LEVEE`, `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT` : une fois par inconnue, et il y en a beaucoup, réparties sur tout le graphe.
-- `VERIFIER_COHERENCE_ENSEMBLE` : une fois par passe de réparation (phase 4) puis une fois en QA finale (phase 7) — c'est le même contrôle appliqué à un objet qui a changé entre-temps.
-- `QUALIFIER_ETAT_RESOLUTION`, `CONSIGNER_CE_QUI_A_TRANCHE` : une fois par nœud de décision.
-- `DECIDER_D_OUVRIR_UN_AGENT` / `ARRETER_ORCHESTRATION` : à chaque inconnue candidate à la délégation, pour éviter d'ouvrir des agents en boucle.
-- `EPROUVER_RETOUR_ARRIERE`, `CONTROLER_TAILLE_DES_ETAPES` : itérées jusqu'à validation.
-
-### Fonctions volontairement laissées de côté
-`ARBITRER_A_L_AVEUGLE`, `ISOLER_LES_EVALUATIONS`, `QUALIFIER_INDEPENDANCE_OBTENUE` : ces fonctions supposent un tournoi anonymisé entre plans concurrents complets — cette architecture n'en produit pas, elle résout nœud par nœud via les faits et les dépendances. `GARANTIR_DIVERSITE_METHODE` et `CHERCHER_APPROCHES_NON_ENVISAGEES` : pertinentes pour balayer large sur un problème entier, moins pour un choix local déjà cadré par ses voisins dans le graphe.
-
----
-
 ---
 
 
 # Architecture 07 — L'arbre des objectifs
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION PROLOGUE_CADRAGE(demande):
@@ -1275,21 +1123,6 @@ FONCTION EPILOGUE_CLOTURE(état_partagé, plan):
     REDIGER_TRACABILITE_SEPAREE(état_partagé)
     RESTITUER_EN_BREF()
 ```
-
----
-
-</details>
-
-
-**Principe** : le périmètre se scinde selon les objectifs qui le composent ; chaque sous-objectif (ou cluster d'objectifs) reçoit le cycle complet, et la *structure du plan final* épouse directement cet arbre — c'est une décomposition « ET » (tous les morceaux sont nécessaires).
-
-**Les 6 choix de conception**
-- **Déclencheur de coupe** : objectifs en conflit (`DETECTER_CONFLIT_OBJECTIFS`) ou de nature hétérogène (`QUALIFIER_FORME_TRAVAIL` diverge), ou trop nombreux pour un seul cycle.
-- **Découpe** : `ORDONNER_OBJECTIFS_SANS_ECARTER` regroupe en clusters cohérents ; chaque cluster devient un sous-périmètre.
-- **Effort par profondeur** : le cadrage racine (prologue) n'est jamais rejoué (`REUTILISER_ACQUIS`) ; `EVALUER_EXIGENCE_TACHE` est réévalué à chaque nœud et réduit mécaniquement l'éventail de techniques (attaque adverse, marges, etc.) à mesure qu'on descend.
-- **Recomposition** : `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` + `ORDONNER_PAR_PREREQUIS` sur l'union des actions, puis `VERIFIER_COHERENCE_ENSEMBLE`.
-- **Dépendances entre frères** : `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` après remontée ; simultanéité testée par `IDENTIFIER_ETAPES_SIMULTANEES` + `VERIFIER_SIMULTANEITE_POSSIBLE`.
-- **Borne de profondeur** : arrêt quand `QUALIFIER_FORME_TRAVAIL` devient homogène dans le cluster, ou `PROFONDEUR_MAX` fixée par la config (`RESPECTER_CADRE_AUTORISE`).
 
 ```
 FONCTION CYCLE_A(périmètre, profondeur, état_partagé):
@@ -1386,25 +1219,10 @@ FONCTION TRANCHER_DECISION(décision, état_partagé):
            NOMMER_FAIT_QUI_FERAIT_BASCULER(décision)
 ```
 
-**3. Boucles**
-- *Boucle de retour (incohérence)* : `VERIFIER_COHERENCE_ENSEMBLE` échoue au merge → on redescend uniquement dans les sous-périmètres en cause, jamais toute la racine ; bornée à 2 reprises, sinon escalade utilisateur.
-- *Boucle de vérification (calibrage des étapes)* : `CONTROLER_TAILLE_DES_ETAPES` échoue → refactoring local, bornée à 2 passes.
-- *Boucle de décision* : options produites → attaquées → si toutes tombent, remonte en `CONSTATER_IMPOSSIBILITE` ou arbitrage utilisateur (jamais de re-génération infinie d'options).
-
-**4. Fonctions appelées plusieurs fois** : `DELIMITER_PERIMETRE`, `RECENSER_INCONNUES`/`CHOISIR_MOYEN_DE_LEVEE` (à chaque feuille), `MENER_VERIFICATION`, `VERIFIER_COHERENCE_ENSEMBLE`/`ORDONNER_PAR_PREREQUIS` (à chaque niveau de fusion), `QUALIFIER_PORTEE_DECISION` (à chaque décision remontée), `CONTROLER_TAILLE_DES_ETAPES`, `PRODUIRE_OPTIONS_DISTINCTES`/`ATTAQUER_UNE_OPTION` (à chaque décision tranchée) — parce que la structure même est récursive et que chaque nœud refait son propre mini-cycle de décision et de vérification.
-
-
----
-
 ---
 
 
 # Architecture 08 — File de travail à point fixe
-
-
-**Principe** : pas de phases fixes — un registre unique de « points ouverts » (inconnues, décisions, risques, étapes à qualifier) est traité en boucle par ordre de dépendance/priorité ; résoudre un point peut en faire naître d'autres de n'importe quel type ; la boucle tourne jusqu'à ce que le registre soit stable, puis un unique passage d'assemblage et de contrôle final clôt le travail.
-
-### Pseudo-code
 
 ```
 INITIALISATION
@@ -1526,34 +1344,10 @@ CONTRÔLE FINAL
   RESTITUER_EN_BREF
 ```
 
-### Boucles
-
-- **Boucle centrale (point fixe sur Q)** : déclenchée par tout item prêt dans la file ; chaque résolution peut pousser de nouveaux items, mais chaque poussée porte une profondeur incrémentée ; termine parce que la profondeur est plafonnée et que les items « prêts » (dépendances satisfaites) finissent par s'épuiser.
-- **Boucle de ré-ouverture post-assemblage** : `VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN` ou `VERIFIER_COUVERTURE_OBJECTIFS` peuvent repousser un item dans Q et rouvrir la boucle centrale ; bornée par un compteur global K (pas par phase, puisqu'il n'y a pas de phases) — au-delà, `CONSTATER_IMPOSSIBILITE`.
-- **Boucle de reformulation** : `ATTAQUER_TOUT_LE_CHAMP` peut, une seule fois dans tout le run (flag dédié), pousser une décision de reformulation en tête de file — c'est la seule remontée « globale ».
-- **Attente utilisateur** : toute question suspend son item précis (pas toute la file) ; les autres items indépendants continuent d'être traités pendant l'attente — propriété propre à cette architecture, absente de A.
-
-### Fonctions appelées plusieurs fois
-- Toute la section `INCONNUE`, `DECISION`, `RISQUE`, `ETAPE` du corps de boucle : appelée une fois par item de ce type, donc potentiellement des dizaines de fois (`MENER_VERIFICATION`, `QUALIFIER_VRAISEMBLANCE_RISQUE`, `DEFINIR_ATTENDU_OBSERVABLE`, etc.).
-- `ATTAQUER_UNE_OPTION` : une fois par option, à chaque item DECISION traité.
-- `QUALIFIER_ETAT_RESOLUTION` : appelée à la clôture de chaque item, quel que soit son type — c'est la fonction la plus rejouée de l'architecture, car elle sert de marqueur de fin de traitement uniforme.
-- `SOUMETTRE_ARBITRAGE_UTILISATEUR` : à chaque point de préférence ou de résidu accepté rencontré, potentiellement plusieurs fois en parallèle.
-
-### Ce qui est laissé de côté
-- `PLACER_JALONS_CONSTAT` : une file de travail rend l'avancement visible par son propre état (items résolus / restants) ; poser des jalons narratifs séparés ferait doublon avec ce que le registre donne déjà.
-- `REPERER_POINTS_ENGAGEMENT` : inclus tout de même en gouvernance, mais joue un rôle mineur — les points d'engagement sont déjà en grande partie visibles comme arêtes de dépendance dans le graphe de décisions.
-
----
-
 ---
 
 
 # Architecture 09 — Cascade de passes contradictoires
-
-
-**Principe** : on écrit d'abord un brouillon minimal et volontairement fragile, puis on le soumet à une série de passes d'attaque indépendantes (contenu → options → faits → risques → étapes → document), chacune convergeant localement par sa propre boucle bornée ; une passe qui invalide une passe antérieure y renvoie précisément, une seule fois par couple de passes.
-
-### Pseudo-code
 
 ```
 ÉTAPE 0 — ADMISSIBILITÉ
@@ -1664,35 +1458,10 @@ CONTRÔLE FINAL
   RESTITUER_EN_BREF
 ```
 
-### Boucles
-
-- **Boucle locale par passe** : chaque passe (Contenu, Options, Faits, Risques, Document) a sa propre convergence à point fixe, bornée à 2–3 tours ; elle boucle sur elle-même tant qu'elle trouve du nouveau, s'arrête dès qu'un tour ne révèle plus rien.
-- **Boucle de rebond entre passes** : une passe avale peut invalider une passe amont (ex. la Passe FAITS tue l'option retenue) ; le rebond cible précisément cette passe, jamais « tout en arrière » ; chaque **couple** de passes ne peut rebondir qu'une fois — c'est le registre de flags qui garantit la terminaison (au pire, autant de rebonds que de couples de passes, un nombre fini et petit).
-- **Boucle d'attente utilisateur** : suspend et reprend, jamais de valeur par défaut.
-- **Garantie de terminaison globale** : produit du plafond de tours par passe (borné) et du nombre fini de couples de passes pouvant rebondir une fois chacun ; il n'existe aucun chemin où deux passes se renvoient indéfiniment la faute.
-
-### Fonctions appelées plusieurs fois
-- `ATTAQUER_UNE_OPTION`, `CHOISIR_ANGLES_ATTAQUE` : à chaque tour de la Passe Options, pour chaque option restante — c'est la fonction la plus sollicitée de cette architecture.
-- `DERIVER_ACTIONS_DEPUIS_DECISIONS` : une première fois en brouillon (Étape 1), une seconde fois pour de vrai (Étape 3) — la différence entre brouillon et version finale est structurelle à cette architecture.
-- `CONTROLER_CONTENU_FINAL` / `FAIRE_CONTROLER_PAR_UN_TIERS` : à chaque tour de la Passe Document.
-- `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT` : une fois par inconnue levée dans la Passe Faits.
-- `CONSTATER_IMPOSSIBILITE` : potentiellement testée à la fin de chaque passe (contenu, options), pas seulement à la fin du processus.
-
-### Ce qui est laissé de côté
-- `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` : cette architecture ne construit pas de graphe global de dépendances en amont — l'ordre émerge passe après passe (contenu avant options avant faits avant risques avant étapes), ce que la cascade elle-même impose déjà.
-- `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : fragmenter en sous-plans casserait la discipline de cascade (chaque sous-plan devrait repasser par toutes les passes séparément, ce qui n'a pas de sens tant que l'option n'est pas figée) ; le surdimensionnement se traite uniquement par `ELAGUER_ETAPES_INUTILES` / `CONTROLER_TAILLE_DES_ETAPES` en Étape 3.
-
----
-
 ---
 
 
 # Architecture 10 — L'épreuve récursive (produire / attaquer / arbitrer, à toutes les échelles)
-
-
-**Principe en une phrase :** un seul mécanisme épistémique — isoler puis attaquer puis arbitrer — est appliqué successivement et récursivement à l'énoncé du problème, à chaque fait convoqué, à chaque décision, puis au plan entier, au lieu de réserver le contradictoire à une seule étape "choix d'options".
-
-### Pseudo-code
 
 ```
 SOUS-PROCÉDURE EPROUVER(objet, nature) :
@@ -1828,30 +1597,10 @@ NIVEAU 5 — Éprouver le plan entier
   RESTITUER_EN_BREF
 ```
 
-### Les boucles
-
-- **La sous-procédure `EPROUVER`** est le nœud de bouclage universel : elle n'appartient à aucun niveau en propre, elle est invoquée par tous. C'est la différence structurante avec les autres approches — ici il n'y a pas "une boucle de vérification des options" et "une boucle de contrôle final" séparées, c'est la même mécanique.
-- **Boucle NIVEAU 1 (reformulation de l'énoncé)** : déclenchée si `ATTAQUER_TOUT_LE_CHAMP` révèle un vice de formulation. Bornée à 2 reformulations, puis `CONSTATER_IMPOSSIBILITE`. C'est la remontée la plus haute possible — un échec ici invalide tout le reste, donc rien en aval n'a encore été construit à ce stade (peu coûteux).
-- **Boucle NIVEAU 2 (épreuve de chaque fait)** : locale à l'inconnue, épuise les moyens de levée puis conclut. Peut faire remonter jusqu'au NIVEAU 1 seulement si le fait manquant bloque la cible elle-même — sinon elle reste confinée.
-- **Boucle NIVEAU 3 (épreuve de chaque option)** : teste les options de la plus fragile à la plus solide (`AVANCER_L_HYPOTHESE_LA_PLUS_FRAGILE`) — termine dès qu'une option survit ou que le champ entier est vidé. Une faille "de champ" peut remonter au NIVEAU 1 (problème mal posé), une faille "de fait" redescend au NIVEAU 2. Bornée par le nombre fini d'options.
-- **Boucle NIVEAU 4 (invariants)** : identique en principe à une autre approche, mais peut remonter jusqu'au NIVEAU 3 si le défaut d'invariant révèle qu'une décision entière doit être reconsidérée, pas seulement une étape.
-- **Boucle NIVEAU 5 (épreuve du plan entier par un tiers)** : la plus intéressante — c'est littéralement `EPROUVER` appliqué à l'objet final, avec `FAIRE_CONTROLER_PAR_UN_TIERS` en rôle d'attaquant. Route précisément vers le niveau d'origine de la faille. Bornée à 3 tours, avec `SIGNALER_LES_LIMITES` comme sortie garantie en dernier recours — ce qui assure la terminaison même si le tiers continue de trouver des défauts mineurs indéfiniment discutables.
-- **Terminaison globale garantie** par trois mécanismes cumulés : compteurs bornés à chaque niveau, `CONSTATER_IMPOSSIBILITE` comme état absorbant en cas de vice réel, et le fait que toute remontée "consomme" l'information qui l'a causée (un fait une fois établi ne redevient pas manquant, une option une fois écartée reste dans `CONSERVER_OPTIONS_ECARTEES` et n'est pas retestée).
-
-### Fonctions appelées plusieurs fois
-
-`ATTAQUER_UNE_OPTION`, `CHOISIR_ANGLES_ATTAQUE`, `ISOLER_LES_EVALUATIONS`, `QUALIFIER_INDEPENDANCE_OBTENUE` — à chaque appel de `EPROUVER`, donc potentiellement des dizaines de fois (une fois par option, plus une fois pour le plan entier). `REFUSER_AUTO_CONFIRMATION` — appliquée deux fois avec un sens différent à chaque fois : une fois par fait établi (NIVEAU 2) *et* une fois sur le retour du tiers lui-même (NIVEAU 5), ce qui est un usage particulièrement révélateur du principe "rien n'est acquis du seul fait qu'un agent l'affirme". `CONSTATER_IMPOSSIBILITE` — invocable à trois niveaux distincts (1, 2, 3) avec des conséquences différentes. `CHOISIR_MOYEN_DE_LEVEE`, `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT` — une fois par fait. `EPROUVER_RETOUR_ARRIERE` — une fois par étape, elle-même une mini-épreuve du même type. `FAIRE_CONTROLER_PAR_UN_TIERS` — jusqu'à 3 fois au NIVEAU 5.
-
-### Ce qu'elle laisse de côté
-
-- `ORDONNER_INCONNUES_SANS_ECARTER` : cette architecture ne construit pas de file de priorité globale — les inconnues sont traitées au fil du NIVEAU 2 dans l'ordre où elles bloquent la construction, pas selon un classement coût/impact explicite ; ce mécanisme de priorisation est le cœur de une autre approche, pas de celle-ci.
-
 ---
 
 
 # Architecture 11 — L'arbre d'enquête
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION PROLOGUE_CADRAGE(demande):
@@ -1905,21 +1654,6 @@ FONCTION EPILOGUE_CLOTURE(état_partagé, plan):
     REDIGER_TRACABILITE_SEPAREE(état_partagé)
     RESTITUER_EN_BREF()
 ```
-
----
-
-</details>
-
-
-**Principe** : on ne découpe pas le problème mais l'incertitude — chaque poche d'inconnues assez grosse et assez indépendante ouvre sa propre branche d'enquête (éventuellement un sous-agent) ; la récursion ne produit **pas** directement des morceaux de plan mais une base de faits et de décisions validée, assemblée en plan **une seule fois, à plat**, à la fin.
-
-**Les 6 choix de conception**
-- **Déclencheur de coupe** : après `RECENSER_INCONNUES`/`QUALIFIER_PORTEE_INCONNUE`, si les inconnues bloquantes se répartissent sur plusieurs domaines hétérogènes et que le territoire est « reconfigurant » (`QUALIFIER_TERRITOIRE`).
-- **Découpe** : un sous-périmètre par domaine d'enquête ; `DECIDER_D_OUVRIR_UN_AGENT` choisit entre sous-agent parallèle ou traitement local.
-- **Effort par profondeur** : à la racine, `CHOISIR_MOYEN_DE_LEVEE` privilégie des moyens larges ; en profondeur, `REDIGER_BRIEF_AGENT` + `BORNER_UN_AGENT` réduisent le périmètre à une question précise et un budget serré — l'effort décroît structurellement avec la profondeur.
-- **Recomposition** : pas un merge de plans mais une fusion de connaissances — `INTEGRER_RETOUR_AGENT`, résolution des contradictions, puis un unique passage d'assemblage du plan.
-- **Dépendances entre frères** : `ISOLER_LES_EVALUATIONS` empêche la contamination pendant que les enquêtes tournent ; à la remontée, `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` vérifie qu'aucune branche ne s'est reposée tacitement sur l'hypothèse d'une autre.
-- **Borne de profondeur** : `ARRETER_ORCHESTRATION` (un agent de plus ne changerait rien) + `RESPECTER_CADRE_AUTORISE` (plafond de sous-agents fixé par la config) + `DISTINGUER_INDETERMINE_ET_NON_CHERCHE` pour ne pas ouvrir de branche sur de l'indéterminable.
 
 ```
 FONCTION CYCLE_B(périmètre, profondeur, état_partagé):
@@ -1996,25 +1730,10 @@ FONCTION ASSEMBLER_PLAN(état_partagé):
     retourner CONTROLER_TAILLE_DES_ETAPES(actions)
 ```
 
-**3. Boucles**
-- *Boucle d'enquête* : moyen de levée échoue → nouveau moyen, bornée à 2 tentatives, puis soit escalade (portée débordante) soit question utilisateur bloquante (`SUSPENDRE_ENQUETE_ET_DEMANDER`, qui *attend* — pas de valeur par défaut).
-- *Boucle de contradiction* : `DETECTER_CONTRADICTION_ENTRE_SOURCES` → `RESOUDRE_CONTRADICTION` ; en cas d'échec, pas de nouvelle tentative sur la même méthode — l'inconnue est requalifiée et remontée.
-- *Boucle de péremption* : différée plutôt qu'immédiate — un fait périssable devient une action de revérification inscrite dans le plan, pas une re-boucle sur place.
-
-**4. Fonctions appelées plusieurs fois** : `RECENSER_INCONNUES`/`QUALIFIER_PORTEE_INCONNUE` (à chaque nœud), `CHOISIR_MOYEN_DE_LEVEE` (par inconnue, potentiellement plusieurs fois), `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT`, `REFUSER_AUTO_CONFIRMATION`, `REDIGER_BRIEF_AGENT`/`BORNER_UN_AGENT`/`INTEGRER_RETOUR_AGENT` (à chaque sous-agent), `DECIDER_D_OUVRIR_UN_AGENT`/`ARRETER_ORCHESTRATION` (à chaque nœud, pour juger de continuer) — parce que la valeur de cette architecture est justement de traiter l'incertitude par petites doses répétées, jamais en un seul passage.
-
-
----
-
 ---
 
 
 # Architecture 12 — Spirale incrémentale (squelette puis épaississement)
-
-
-**Principe** : écrire d'abord un plan complet mais délibérément mince (un seul chemin, sans branches ni détail de risque), le faire tenir debout, puis l'épaissir passe après passe (inconnues, options, robustesse, gouvernance, prose) — chaque passe touche tout le plan mais à une profondeur croissante, avec une porte de vérification avant de passer à la suivante.
-
-### Pseudo-code
 
 ```
 # --- Passe 0 : recevabilité ------------------------------------------------
@@ -2191,34 +1910,10 @@ REDIGER_PLAN(); REDIGER_TRACABILITE_SEPAREE()
 PLACER_ET_NOMMER_LE_FICHIER(); RESTITUER_EN_BREF()
 ```
 
-### Les boucles
-
-- **Boucle 1** : fidélité cible/besoin — comme dans les autres approches.
-- **Porte 1 (boucle 2)** : le squelette doit tenir structurellement avant même d'avoir des faits — sinon on reforme le chemin ; bornée à 2 essais puis `CONSTATER_IMPOSSIBILITE`.
-- **Boucle 3/4** : par étape puis par inconnue — remontent seulement à l'intérieur de l'étape concernée ; bornées à 2 tentatives par inconnue.
-- **Porte 2 (boucle 5)** : contrôle de l'adossement des faits fraîchement collectés ; remonte au choix du moyen de levée (boucle 4) si un fait échoue ; bornée à 2 passes.
-- **Boucle 6** : épaississement point par point — seulement sur les points marqués « à approfondir » ou « territoire reconfigurant », pas sur tout le squelette.
-- **Porte 3 (boucle 7)** : la seule boucle autorisée à remonter jusqu'à la Passe 0 (reformulation de l'énoncé), déclenchée par `ATTAQUER_TOUT_LE_CHAMP` — bornée à une seule fois, ce qui l'empêche de devenir un cycle.
-- **Boucle 8** (retours arrière) et **porte 4 / boucle 9** (invariants) : la boucle 9, en cas de violation, ne revient pas à la Passe 4 elle-même mais à la Passe 3, ciblée sur le chemin fautif — bornée à 2 passes.
-- **Boucles 10 à 13** : vérifications de gouvernance et de couverture, chacune corrige localement et se termine dès validation ; la boucle 11 (faisabilité) repêche un dauphin déjà connu avant d'abandonner, ce qui la borne au nombre d'options produites en Passe 3.
-- **Boucle 14 (porte finale)** : dispatch vers la passe responsable de chaque défaut détecté par le tiers ; chaque passe n'est rouvrable qu'une fois depuis cette porte, garantissant la terminaison.
-
-Terminaison garantie par : la structure en passes strictement ordonnées (on ne revient jamais « en avant », seulement en arrière d'un nombre borné de passes), combinée aux bornes numériques sur chaque boucle locale.
-
-### Fonctions appelées plusieurs fois
-
-- `VERIFIER_COHERENCE_ENSEMBLE` : aux portes 1, 3 et 14 — le même contrôle réappliqué à un objet de plus en plus épais.
-- `CHOISIR_MOYEN_DE_LEVEE` / `MENER_VERIFICATION` : par inconnue, potentiellement plusieurs fois par inconnue si le premier moyen échoue.
-- `PRODUIRE_OPTIONS_DISTINCTES` : une fois légèrement en Passe 1 (pour le squelette), puis à nouveau, en profondeur, pour chaque point épaissi en Passe 3.
-- `VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN`, `VERIFIER_FAISABILITE_PAR_EXECUTANT`, `VERIFIER_COUVERTURE_BLOQUANTS`, `CONTROLER_TAILLE_DES_ETAPES` : répétées jusqu'à validation, à chaque porte concernée.
-- `REUTILISER_ACQUIS` : à chaque passe suivante, pour ne pas redémontrer ce que les passes précédentes ont déjà établi.
-
 ---
 
 
 # Architecture 13 — Le tournoi d'options
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION PROLOGUE_CADRAGE(demande):
@@ -2272,21 +1967,6 @@ FONCTION EPILOGUE_CLOTURE(état_partagé, plan):
     REDIGER_TRACABILITE_SEPAREE(état_partagé)
     RESTITUER_EN_BREF()
 ```
-
----
-
-</details>
-
-
-**Principe** : découpage « OU » et non « ET » — chaque option candidate à une vraie décision est développée comme un plan miniature complet et isolé ; ce n'est pas la fusion mais l'**arbitrage** qui recompose.
-
-**Les 6 choix de conception**
-- **Déclencheur de coupe** : `ORIENTER_CHOIX` classe la situation comme « vrai choix à instruire » (pas un fait manquant, pas une simple préférence) et `PRODUIRE_OPTIONS_DISTINCTES` produit plus d'une option matériellement différente.
-- **Découpe** : une branche par option ; chacune hérite du cadrage racine sans le rejouer.
-- **Effort par profondeur** : le nombre d'angles d'attaque (`CHOISIR_ANGLES_ATTAQUE`) et le nombre de tours du tournoi se réduisent avec la profondeur ; un sous-choix interne à une option ne redéclenche un tournoi complet que s'il reste un vrai choix.
-- **Recomposition** : pas un merge additif — un arbitrage (`ARBITRER_A_L_AVEUGLE`, sur options anonymisées, jamais au nombre de voix), avec récupération tracée des morceaux valables des options perdantes.
-- **Dépendances entre frères** : les branches sont volontairement isolées pendant leur développement (`ISOLER_LES_EVALUATIONS`) pour empêcher toute contamination ; après coup, on vérifie qu'aucune n'a *tacitement* présupposé le choix d'une autre (ce qui romprait leur indépendance).
-- **Borne de profondeur** : `GARANTIR_DIVERSITE_METHODE` qui échoue à produire une option vraiment distincte arrête la récursion ; sinon `PROFONDEUR_MAX` de config.
 
 ```
 FONCTION CYCLE_C(périmètre, profondeur, état_partagé):
@@ -2351,26 +2031,10 @@ FONCTION DEVELOPPER_OPTION(option, périmètre, état_partagé):
     # attendus observables, retours arrière, risques locaux, calibrage des étapes.
 ```
 
-**3. Boucles**
-- *Boucle de diversité* : options trop proches en méthode → recherche d'approche non envisagée, bornée à 2 tentatives, sinon on accepte l'éventail obtenu et on le signale (`RENDRE_INCERTITUDE_VISIBLE`).
-- *Boucle d'attaque/tout-le-champ* : si toutes les options tombent, remontée maximale jusqu'à `CONTESTER_ENONCE_PROBLEME` à la racine — pas de nouvelle génération d'options au même niveau, c'est le cadrage lui-même qui est remis en cause.
-- *Boucle de fragilité* : tant qu'il reste plus d'une survivante, on attaque systématiquement l'hypothèse la plus fragile ; elle termine mécaniquement car chaque tour élimine ou confirme une branche (ensemble fini, décroissant).
-- *Boucle d'indépendance* : erreurs corrélées détectées → dégrade `QUALIFIER_INDEPENDANCE_OBTENUE` plutôt que de re-boucler indéfiniment sur la recherche d'une source indépendante.
-
-**4. Fonctions appelées plusieurs fois** : `PRODUIRE_OPTIONS_DISTINCTES` (racine et chaque sous-choix récursif), `ATTAQUER_UNE_OPTION` (chaque option, plusieurs passes possibles), `CHOISIR_ANGLES_ATTAQUE`, `ISOLER_LES_EVALUATIONS`, `ARBITRER_A_L_AVEUGLE` (à chaque niveau du tournoi), `RATTACHER_TOUTE_PIECE_A_SON_ORIGINE`, `CONSERVER_OPTIONS_ECARTEES` — parce que l'architecture réplique tout le cycle sur chaque hypothèse rivale plutôt que de le dérouler une fois.
-
-
----
-
 ---
 
 
 # Architecture 14 — Pipeline à jalons verrouillés
-
-
-**Principe** : le travail avance en phases strictement ordonnées (cadrage → état/cible → inconnues → options → risques → étapes → gouvernance → contrôle final) ; chaque phase se termine par une porte de vérification qui, en cas d'échec, ne redémarre que la phase courante ou remonte d'une phase à la fois — jamais plus loin sans passer par un point d'escalade explicite vers l'utilisateur.
-
-### Pseudo-code
 
 ```
 PHASE 0 — CADRAGE
@@ -2529,34 +2193,10 @@ PHASE 7 — CONTRÔLE FINAL
   RESTITUER_EN_BREF
 ```
 
-### Boucles
-
-- **Boucle locale de porte** (chaque phase) : déclenchée par l'échec d'une vérification de fin de phase (ex. `VERIFIER_FIDELITE_CIBLE_BESOIN`, `VERIFIER_SIMULTANEITE_POSSIBLE`) ; ne remonte pas plus haut que la phase courante ; bornée à 2–3 tours puis escalade.
-- **Boucle d'investigation** (Phase 2) : file d'inconnues qui décroît strictement (une inconnue résolue ne revient qu'exceptionnellement, sous forme d'une inconnue *nouvelle* et distincte) ; se termine quand la file est vide ou par `ARRETER_ORCHESTRATION`.
-- **Boucle d'escalade inter-phase** : une porte qui échoue de façon répétée renvoie exactement d'une phase en arrière (jamais deux), sauf le cas `ATTAQUER_TOUT_LE_CHAMP` qui peut renvoyer jusqu'à la Phase 0 — plafonné à une occurrence dans tout le run.
-- **Boucle d'attente utilisateur** : `SUSPENDRE_ENQUETE_ET_DEMANDER` / `SOUMETTRE_ARBITRAGE_UTILISATEUR` ne sont jamais des boucles au sens strict : elles arrêtent le flux et reprennent au même point avec la réponse, ce qui garantit qu'elles ne tournent jamais indéfiniment.
-- **Garantie globale de terminaison** : chaque boucle locale a un plafond fixe de tours ; au-delà, elle échoue explicitement vers `CONSTATER_IMPOSSIBILITE` ou vers l'utilisateur — jamais vers une nouvelle tentative silencieuse.
-
-### Fonctions appelées plusieurs fois
-- `MENER_VERIFICATION`, `CHOISIR_MOYEN_DE_LEVEE` : une fois par inconnue.
-- `ATTAQUER_UNE_OPTION` : une fois par option.
-- `CONSIGNER_PROVENANCE_FAIT`, `JUGER_PEREMPTION_FAIT` : une fois par fait établi.
-- `SOUMETTRE_ARBITRAGE_UTILISATEUR` : à chaque point de désaccord irréductible (conflit d'objectifs, risque résiduel, faisabilité).
-- `DEFINIR_ATTENDU_OBSERVABLE`, `DEFINIR_RETOUR_ARRIERE`, `EPROUVER_RETOUR_ARRIERE`, `QUALIFIER_ETAT_RESOLUTION` : une fois par étape / par point.
-- `VERIFIER_FIDELITE_CIBLE_BESOIN`, `CONTROLER_TAILLE_DES_ETAPES`, `VERIFIER_SIMULTANEITE_POSSIBLE` : rejouées à chaque tour de leur boucle de porte locale.
-
-### Ce qui est laissé de côté
-- `AMORCER_DEPUIS_PLAN_EXISTANT` : cette architecture démarre toujours d'une demande fraîche en Phase 0 ; elle n'a pas de point d'entrée alternatif sans casser sa discipline de verrouillage séquentiel.
-- `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : un pipeline à portes ne recomposerait pas proprement un sous-cycle de phases en cours de route — le surdimensionnement se traite uniquement par `CONTROLER_TAILLE_DES_ETAPES` / `ELAGUER_ETAPES_INUTILES`.
-
----
-
 ---
 
 
 # Architecture 15 — Cascade à paliers bornés
-
-<details><summary>Briques utilisées</summary>
 
 ```
 FONCTION CONFRONTATION(question, dossier):
@@ -2600,8 +2240,6 @@ FONCTION CONFRONTATION(question, dossier):
 
     RETOURNER verdict
 ```
-
-### `CONSTITUER_DOSSIER_INITIAL(demande)` — construit les faits, jamais un verdict
 
 ```
 FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
@@ -2651,8 +2289,6 @@ FONCTION CONSTITUER_DOSSIER_INITIAL(demande_ou_plan_existant):
     RETOURNER dossier
 ```
 
-### `METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts, dossier)` — met en forme, puis vérifie avant d'émettre
-
 ```
 FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     actions = DERIVER_ACTIONS_DEPUIS_DECISIONS(verdicts_choix)
@@ -2692,17 +2328,6 @@ FONCTION METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier):
     RESTITUER_EN_BREF()
     RETOURNER plan
 ```
-
-Ces trois briques couvrent, à elles seules, la quasi-totalité des 129 identifiants. Ce qui suit montre, pour chaque architecture, **comment on arrive à `CONFRONTATION`, dans quel ordre, ce qui la déclenche, et comment un verdict peut rouvrir ce qui précède** — c'est là qu'elles diffèrent réellement.
-
----
-
-</details>
-
-
-**Principe** : trois paliers strictement ordonnés (PROBLÈME → STRUCTURE → CHOIX), chacun gagné par une confrontation ; un verdict ne peut rouvrir que le palier immédiatement précédent, et seulement un nombre de fois plafonné par un budget qui décroît — au-delà, on force la clôture par l'utilisateur.
-
-### Pseudo-code
 
 ```
 FONCTION PLANIFIER(demande):
@@ -2755,28 +2380,10 @@ FONCTION PLANIFIER(demande):
     plan = METTRE_EN_FORME_ET_CONTROLER(squelette, verdicts_choix, dossier)
 ```
 
-### 3. Les boucles
-
-- **Boucle palier 2 (structure ↔ problème)** : déclenchée quand un verdict de structure nomme un fait qui invaliderait la cible. Remonte au palier 1, jamais plus loin. Bornée par `budget[PROBLEME]` (1 par défaut) ; à épuisement, `SOUMETTRE_ARBITRAGE_UTILISATEUR` coupe court — terminaison garantie en au plus 2 passages.
-- **Boucle palier 3 (choix ↔ structure)** : déclenchée quand un choix litigieux révèle que le découpage retenu ne tient pas. Remonte au palier 2 (jamais directement au palier 1). Bornée par `budget[STRUCTURE]` (2 par défaut).
-- **Boucle de vérification finale** (dans `METTRE_EN_FORME_ET_CONTROLER`) : contrôle après rédaction, corrige localement, jamais plus de 2 essais avant `STATUER_SUR_RISQUE_RESIDUEL`.
-- Pas de boucle sur le palier 1 lui-même : un problème constaté impossible arrête net (pas de rejeu automatique).
-
-### 4. Fonctions appelées plusieurs fois
-
-`CONFRONTATION` (au moins 3 fois, souvent plus avec les reprises) ; `CONSIGNER_CE_QUI_A_TRANCHE`, `QUALIFIER_ETAT_RESOLUTION`, `NOMMER_FAIT_QUI_FERAIT_BASCULER` (une fois par confrontation) ; `CHOISIR_MOYEN_DE_LEVEE` / `MENER_VERIFICATION` (une fois par inconnue) ; `REUTILISER_ACQUIS` (à chaque réouverture, pour ne pas rejouer le dossier déjà validé) ; `SOUMETTRE_ARBITRAGE_UTILISATEUR` (potentiellement à chaque palier, en dernier recours).
-
----
-
 ---
 
 
 # Architecture 16 — Le pipeline à portes
-
-
-**Principe en une phrase :** le plan se construit en sept phases strictement ordonnées (cadrage → état/cible → inconnues → décisions → construction des étapes → risques/gouvernance → rédaction), et chaque phase ne se termine que si une porte de vérification explicite l'y autorise ; un échec de porte renvoie à une phase amont précise, jamais plus loin que nécessaire.
-
-### Pseudo-code
 
 ```
 PHASE 0 — Recevabilité
@@ -2944,38 +2551,10 @@ PHASE 7 — Rédaction et contrôle final
   RESTITUER_EN_BREF
 ```
 
-### Les boucles
-
-- **Boucle "porte 1" (fidélité cible↔besoin, PHASE 1)** : déclenchée par un échec de `VERIFIER_FIDELITE_CIBLE_BESOIN`. Remonte seulement à la reformulation de la cible dans la même phase. Bornée à 3 essais, puis bascule sur une question utilisateur — qui, par contrat, attend une réponse et ne boucle donc jamais indéfiniment.
-- **Boucle de levée d'inconnue (PHASE 3)** : déclenchée pour chaque inconnue bloquante ; essaie les moyens de `CHOISIR_MOYEN_DE_LEVEE` un à un. Ne remonte nulle part — elle est locale à l'inconnue. Termine par épuisement des moyens (liste finie), aboutissant soit à la résolution, soit à `CONSTATER_IMPOSSIBILITE`, soit à un reclassement en inconnue d'exécution.
-- **Boucle "porte 2"** : si une inconnue bloquante nouvelle apparaît après la première passe, on reboucle en tête de PHASE 3. Termine car l'ensemble des inconnues bloquantes ne peut que décroître (chaque résolution retire un élément, et une inconnue reclassée en "exécution" ne revient jamais dans cette file).
-- **Boucle "décision → inconnue manquante" (PHASE 4)** : une décision qui bute sur un fait manquant envoie ce fait précis en PHASE 3, puis revient sur cette même décision. Termine car le fait, une fois établi, ne peut plus être "manquant" une seconde fois.
-- **Boucle "porte 3"** : rebouclage sur la décision en litige tant qu'un état "non résolu" subsiste. Bornée par le nombre fini de décisions et par `CONSTATER_IMPOSSIBILITE` en secours.
-- **Boucle de calibrage des étapes (`CONTROLER_TAILLE_DES_ETAPES`, PHASE 5)** : scinde/fusionne jusqu'à convergence ; termine car chaque correction rapproche strictement de la fourchette cible (une étape trop grosse scindée ne peut être rescindée indéfiniment sur un plan fini).
-- **Boucle des invariants (PHASE 6)** : `VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN` échoue → retour PHASE 5 sur le chemin fautif. Chaque passage corrige au moins une violation ; bornée par le nombre fini de chemins × invariants.
-- **Boucle de contrôle final (PHASE 7)** : la plus large — elle peut router vers n'importe quelle phase amont selon la nature de l'échec. Bornée explicitement à 2 tours ; au-delà, on consigne la limite plutôt que de reboucler (`SIGNALER_LES_LIMITES`), ce qui garantit la terminaison même en cas de défaut structurel non corrigible immédiatement.
-
-### Fonctions appelées plusieurs fois
-
-`MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT`, `ENONCER_LIMITES_FAIT`, `JUGER_PEREMPTION_FAIT`, `REFUSER_AUTO_CONFIRMATION` — une fois par fait établi, potentiellement des dizaines de fois. `CHOISIR_MOYEN_DE_LEVEE` — une fois par tentative de levée. `ATTAQUER_UNE_OPTION`/`CHOISIR_ANGLES_ATTAQUE` — une fois par option de chaque décision. `DEFINIR_ATTENDU_OBSERVABLE`, `DEFINIR_RETOUR_ARRIERE`, `EPROUVER_RETOUR_ARRIERE` — une fois par étape. `SUSPENDRE_ENQUETE_ET_DEMANDER`/`FORMULER_QUESTION_ACTIONNABLE` — à chaque fois qu'une question doit remonter (cadrage, inconnue, arbitrage). `VERIFIER_COUVERTURE_OBJECTIFS`, `VERIFIER_COHERENCE_ENSEMBLE`, `VERIFIER_ADOSSEMENT_AFFIRMATIONS` — répétées à chaque tour de contrôle final.
-
-### Ce qu'elle laisse de côté
-
-- `AVANCER_L_HYPOTHESE_LA_PLUS_FRAGILE` : l'ordre de traitement des décisions est fixé par `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` (prérequis), pas par un critère de fragilité concurrent — les deux critères d'ordonnancement seraient redondants dans un pipeline à un seul passage.
-- `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : un pipeline à portes suppose un unique passage linéaire ; découper reviendrait à instancier récursivement tout le pipeline, ce que ce squelette ne prévoit pas (mentionné comme cas exceptionnel, non structurant).
-- `ARRETER_ORCHESTRATION` : chaque phase borne elle-même son effort (porte de sortie) ; il n'y a pas d'orchestration ouverte à interrompre puisque les agents de PHASE 3 traitent chacun une inconnue isolée et bornée par `BORNER_UN_AGENT`.
-
----
-
 ---
 
 
 # Architecture 17 — Tournoi adversarial d'options complètes
-
-
-**Principe** : produire plusieurs plans entiers matériellement différents, les attaquer et les faire arbitrer à l'aveugle les uns contre les autres, et ne raffiner que le gagnant — la comparaison porte sur des plans complets, pas sur des décisions isolées.
-
-### Pseudo-code
 
 ```
 # --- Phase 0-1 : repris du bloc de cadrage (cadrage, état, cible) ----
@@ -3143,41 +2722,10 @@ REDIGER_PLAN(); REDIGER_TRACABILITE_SEPAREE()
 PLACER_ET_NOMMER_LE_FICHIER(); RESTITUER_EN_BREF()
 ```
 
-### Les boucles
-
-- **Boucle 1** : fidélité cible/besoin, comme dans le bloc de cadrage.
-- **Boucle 2** : régénération des options tant qu'elles ne sont pas méthodologiquement distinctes ; bornée à 2 tours.
-- **Boucle 3** (implicite, `FOR` sur les options) : l'attaque est répétée pour chaque concurrent, isolément (`ISOLER_LES_EVALUATIONS`).
-- **Boucle 4/5** (tournoi) : déclenchée par un arbitrage sans gagnant clair (toutes violent une contrainte dure) ou par un vrai désaccord de valeur ; remonte à la production de nouvelles options (jamais à un simple ajustement local) ; bornée à 2 tours de régénération puis `CONSTATER_IMPOSSIBILITE`, ou tranchée immédiatement par l'utilisateur si c'est un arbitrage de valeur.
-- **Boucle 6** (invariants sur le gagnant) : corrige localement le chemin fautif en le ré-attaquant spécifiquement, sans relancer le tournoi ; bornée à 2 tentatives.
-- **Boucle 8** (faisabilité côté exécutant) : si le gagnant n'est pas exécutable, on ne relance pas tout le tournoi — on repêche le dauphin déjà conservé par `CONSERVER_OPTIONS_ECARTEES`, ce qui borne intrinsèquement la boucle au nombre d'options produites.
-- **Boucles 7, 9** : vérifications locales classiques, bornées à 2 passes.
-
-Terminaison garantie par : la borne numérique sur chaque boucle, plus le fait que la boucle 8 consomme un ensemble fini et décroissant d'options écartées (elle ne peut pas tourner plus de fois qu'il y a d'options produites).
-
-### Fonctions appelées plusieurs fois
-
-- `PRODUIRE_OPTIONS_DISTINCTES` : à la production initiale et, potentiellement, en régénération après un tournoi sans gagnant.
-- `ATTAQUER_UNE_OPTION` : une fois par option au tour principal, puis une fois de plus, ciblée, si un invariant casse sur le gagnant.
-- `CHOISIR_ANGLES_ATTAQUE` : une fois par option attaquée.
-- `VERIFIER_FAISABILITE_PAR_EXECUTANT` : potentiellement plusieurs fois si l'on doit redescendre dans la liste des dauphins.
-- `CONSIGNER_PROVENANCE_FAIT` / `VERIFIER_ADOSSEMENT_AFFIRMATIONS` : pour chaque fait du socle partagé, puis à nouveau en contrôle final sur l'ensemble du plan raffiné.
-- `VERIFIER_COHERENCE_ENSEMBLE` : une fois par tentative de la boucle 9.
-
-### Fonctions volontairement laissées de côté
-`QUALIFIER_TERRITOIRE`, `DISTINGUER_ETAPE_ESSENTIELLE_ET_MECANIQUE`, `CHERCHER_ALTERNATIVE_A_UN_PAS_DIT_MECANIQUE` : ces fonctions instruisent un doute nœud par nœud sur le caractère mécanique d'une étape — orthogonal au principe ici, qui compare des plans entiers plutôt que d'interroger chaque étape individuellement.
-
----
-
 ---
 
 
 # Architecture 18 — Vagues par dépendances
-
-
-**Principe en une phrase** : au lieu de traiter toutes les inconnues puis toutes les décisions, le plan est construit par vagues successives de décisions mutuellement indépendantes (couches du graphe de dépendances), chaque vague menant son propre cycle enquête→décision→construction avant que la vague suivante ne s'ouvre.
-
-### Pseudo-code
 
 ```
 PHASE 0 — CADRAGE ET CARTOGRAPHIE (une seule fois)
@@ -3302,20 +2850,5 @@ PHASE D — RÉDACTION & CONTRÔLE FINAL
 PHASE E — LIVRAISON
   RESTITUER_EN_BREF
 ```
-
-### Les boucles
-- **Boucle de vagues** elle-même : ce n'est pas un "retour d'échec", c'est le moteur normal de l'algorithme — elle se termine nécessairement car chaque itération ferme au moins un nœud du graphe fini de décisions.
-- **B1→B1 / B2→B2** : bouclage local dans la vague en cours, borné par le nombre fini d'inconnues/décisions de cette vague.
-- **B1/B2→Phase 0** : correction du graphe lui-même, bornée par le nombre fini d'arêtes que le graphe final peut recevoir (aucune arête n'est jamais retirée, donc pas de cycle infini).
-- **B2→vague antérieure w'** : la signature de cette architecture — un retour très ciblé qui rouvre une vague déjà fermée, jamais tout le pipeline ; borné pour la même raison (monotonie du graphe).
-- **PhaseC/PhaseD→vague w** : retour ciblé grâce à la provenance enregistrée par `RATTACHER_TOUTE_PIECE_A_SON_ORIGINE`, plafonné à un budget global.
-
-### Fonctions appelées plusieurs fois
-Tout le contenu de B1/B2/B3 est rejoué **une fois par vague** (au lieu d'une fois pour tout le plan) : `PRODUIRE_OPTIONS_DISTINCTES`, `ATTAQUER_UNE_OPTION`, `CONSIGNER_CE_QUI_A_TRANCHE`, `DEFINIR_ATTENDU_OBSERVABLE`, etc. `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` est consulté à chaque début de vague pour calculer la couche suivante. `REUTILISER_ACQUIS` et `RATTACHER_TOUTE_PIECE_A_SON_ORIGINE` sont appelés à chaque vague. `VERIFIER_COHERENCE_ENSEMBLE` est appelé de façon incrémentale (à chaque fermeture de vague, portée croissante) puis une fois de façon globale en phase C.
-
-### Fonctions laissées de côté
-`AMORCER_DEPUIS_PLAN_EXISTANT` : l'architecture suppose une entrée par demande fraîche, pas une reprise depuis un plan existant (même emplacement possible en Phase 0, non modélisé ici pour rester net).
-
----
 
 ---
