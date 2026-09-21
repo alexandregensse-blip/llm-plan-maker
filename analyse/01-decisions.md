@@ -282,6 +282,92 @@ doit être justifiée explicitement.
 
 ---
 
+## D-16 — Le format du plan est fixé par un template, et c'est hors scope pour l'instant
+
+Le plan livré suit un template fixe.
+On ne décide pas maintenant de ses sections : on y reviendra après l'architecture.
+Aucune fonction ne porte le format, et c'est assumé.
+La « règle F » proposée par l'agent Opus reste une proposition, pas une décision.
+
+---
+
+## D-17 — La validation du plan par l'utilisateur est hors du skill
+
+La sortie du skill est le plan, et rien d'autre.
+Si l'utilisateur n'est pas satisfait, il réinvoque le skill en disant ce qui ne va pas.
+Mais si ça arrive, c'est qu'on a mal cerné son besoin : c'est un défaut du skill en amont, pas une porte manquante en aval.
+
+---
+
+## D-18 — Pas de fonction pour traquer les retraits silencieux
+
+Il suffit que le contrôle final soit assez bon pour les rendre bruyants.
+Un retrait dont personne ne s'aperçoit au contrôle est un retrait qu'il fallait faire.
+
+---
+
+## D-19 — L'épreuve d'autonomie est ajoutée au périmètre
+
+Le principe 13 veut un plan auto-porteur, et rien ne l'éprouvait.
+Le contrôle : donner le plan seul à un agent qui n'a rien vu de l'enquête, et lui demander non pas de l'exécuter, mais de dire à quel endroit il devrait redemander quelque chose.
+Nouvelle fonction `EPROUVER_AUTONOMIE_DU_TEXTE`, axe 8.6.
+
+---
+
+## D-20 — Le plan n'est pas daté
+
+Ce qui bouge avec le temps n'est pas le plan mais les faits dont il part.
+Le traitement correct existe déjà : une étape de vérification des hypothèses, constats et axiomes, inscrite dans le plan.
+Rejouer un plan se fait à la demande de l'utilisateur, ce qui est hors du périmètre du skill.
+
+---
+
+## D-21 — Une seule architecture, efficace dans tous les cas
+
+Pas de régimes A / B / C, pas de sélecteur en amont.
+Une architecture unique, qui doit tenir sur la demande triviale comme sur le travail trop gros.
+Si elle n'y arrive pas, on l'améliore — on ne la duplique pas.
+
+---
+
+## D-22 — Les règles communes ne sont pas arbitrées par nous
+
+Les quatre invariants proposés par l'agent Opus (quittance, arbitre briefé, champ d'un seul, cadre) ne sont ni validés ni rejetés.
+C'est aux agents qui proposent des architectures de juger si c'est bien.
+
+---
+
+## D-23 — L'indépendance des concurrents aveugles est atteignable
+
+Constat empirique : à modèle identique, les discours diffèrent réellement.
+Quand ils ne diffèrent pas assez, biaiser explicitement un concurrent — lui demander autre chose — fonctionne.
+C'est une technique légitime, pas un aveu de faiblesse.
+
+---
+
+## D-24 — Utilisateur non coopératif
+
+S'il ne répond pas : on attend.
+S'il répond « je ne sais pas » : on lui explique simplement de quoi il s'agit.
+S'il se contredit : c'est que le besoin est mal cerné, et c'est à l'agent de le cerner mieux.
+
+---
+
+## D-25 — Les inconnues sont réputées résolubles avant le plan
+
+On part toujours du principe qu'une inconnue peut être levée avant d'écrire le plan.
+Le classement construction / exécution existe, mais il doit être contrôlé par le système lui-même, jamais décidé en silence.
+Pas par l'utilisateur : on ne le sollicite jamais sur ce qu'on peut faire en autonomie.
+
+---
+
+## D-26 — On ne sollicite jamais l'utilisateur sur ce qu'on peut faire en autonomie
+
+La question à l'utilisateur est un dernier recours, jamais un réflexe ni un moyen de se couvrir.
+Contrepoids indispensable au principe « l'utilisateur décide » : sans lui, le système se décharge de son travail d'enquête en posant des questions.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut

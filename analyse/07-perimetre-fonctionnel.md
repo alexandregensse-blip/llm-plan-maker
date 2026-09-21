@@ -245,6 +245,7 @@ d'autre. Les principes qui gouvernent l'ensemble sont en fin de document.
 - 8.6.2 Intégrité structurelle
 - 8.6.3 Indépendance du contrôle
 - 8.6.4 Dimensionnement des étapes
+- 8.6.5 Épreuve d'autonomie — voir D-19
 
 ---
 

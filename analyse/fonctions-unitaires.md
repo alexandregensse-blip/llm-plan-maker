@@ -1,32 +1,35 @@
 # Fonctions unitaires disponibles
 
-On dispose d'un système qui met à disposition les **129 fonctions unitaires**
-listées ci-dessous. Chacune est atomique. Chacune peut être appelée **autant de
-fois que nécessaire, à n'importe quel moment**, sur n'importe quel objet.
+On dispose d'un système qui met à disposition les **130 fonctions unitaires** listées ci-dessous.
+Chacune est atomique.
+Chacune peut être appelée **autant de fois que nécessaire, à n'importe quel moment**, sur n'importe quel objet.
 
-Le système est un agent LLM outillé. Il sait lire, écrire, inspecter un système
-cible, chercher en ligne, ouvrir des sous-agents isolés, et interroger
-l'utilisateur.
+Le système est un agent LLM outillé.
+Il sait lire, écrire, inspecter un système cible, chercher en ligne, ouvrir des sous-agents isolés, et interroger l'utilisateur.
 
 **Le système doit produire un plan d'action détaillé, écrit dans un fichier.**
 Il ne conduit pas l'exécution de ce plan : il le livre.
 
 Quelques propriétés du système, qui contraignent toute architecture :
 
-- Il a le droit d'enquêter avant de planifier — lire, inspecter, chercher,
-  ouvrir des agents, interroger l'utilisateur, mener une action réversible et
-  bornée. Il n'a pas le droit d'exécuter un engagement du plan.
-- Rien n'est reporté à l'exécution : tout ce qui peut être vérifié, investigué,
-  demandé ou décidé l'est avant que le plan soit écrit.
-- L'utilisateur décide, le système rapporte. Quand le système pose une question,
-  il attend la réponse ; il ne continue pas sur une valeur par défaut.
-- Le système ne raisonne jamais en coût. Une configuration dit quelles
-  techniques sont autorisées.
-- Le plan a un format fixe ; seul son contenu grossit avec la complexité.
+- Il a le droit d'enquêter avant de planifier — lire, inspecter, chercher, ouvrir des agents, interroger l'utilisateur, mener une action réversible et bornée.
+  Il n'a pas le droit d'exécuter un engagement du plan.
+- Rien n'est reporté à l'exécution : tout ce qui peut être vérifié, investigué, demandé ou décidé l'est avant que le plan soit écrit.
+- Toute inconnue est réputée résoluble avant l'écriture du plan, au besoin en remontant à l'utilisateur.
+  Classer une inconnue comme ne pouvant être levée qu'à l'exécution est l'exception : ce classement doit être contrôlé par le système, jamais décidé en silence.
+- On ne sollicite jamais l'utilisateur sur ce que le système peut établir en autonomie.
+  La question est un dernier recours.
+- L'utilisateur décide, le système rapporte.
+  Quand le système pose une question, il attend la réponse ; il ne continue pas sur une valeur par défaut.
+- Le système ne raisonne jamais en coût.
+  Une configuration dit quelles techniques sont autorisées.
+- Le plan suit un template au format fixe, qui est donné au système.
+  L'architecture n'a pas à définir ce format ; seul le contenu du plan grossit avec la complexité.
+- Le livrable du système est le plan.
+  Ce qui se passe après — validation par l'utilisateur, exécution, rejeu — est hors du système.
 
 **L'ordre de la liste ci-dessous est aléatoire et ne porte aucune information.**
-Les identifiants sont sémantiques : ils décrivent ce que la fonction fait, pas
-sa place dans un quelconque enchaînement.
+Les identifiants sont sémantiques : ils décrivent ce que la fonction fait, pas sa place dans un quelconque enchaînement.
 
 ---
 
@@ -215,6 +218,9 @@ Repérer que deux sources ne disent pas la même chose.
 
 **`ORDONNER_INCONNUES_SANS_ECARTER`**
 Classer les inconnues par ce qu'elles peuvent changer et par le coût de leur levée. On ordonne, on n'écarte pas.
+
+**`EPROUVER_AUTONOMIE_DU_TEXTE`**
+Soumettre le plan seul à un lecteur qui n'a rien vu de l'enquête, et lui demander non pas de l'exécuter mais de dire où il devrait redemander quelque chose.
 
 **`ISOLER_LES_EVALUATIONS`**
 Empêcher la contamination entre évaluations censées être indépendantes : ne jamais montrer une proposition à l'autre avant qu'elles soient formées, ne jamais donner à l'attaquant le plaidoyer de ce qu'il attaque.
