@@ -181,9 +181,6 @@ PHASE 6 — LIVRAISON
 ### Fonctions appelées plusieurs fois
 `CHOISIR_MOYEN_DE_LEVEE`, `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT` (une fois par inconnue) ; `PRODUIRE_OPTIONS_DISTINCTES`, `ATTAQUER_UNE_OPTION`, `ARBITRER_A_L_AVEUGLE`, `CONSIGNER_CE_QUI_A_TRANCHE` (une fois par décision) ; `DEFINIR_ATTENDU_OBSERVABLE`, `DEFINIR_RETOUR_ARRIERE` (une fois par étape) ; `VERIFIER_COHERENCE_ENSEMBLE` (à granularité croissante : décisions, puis document entier) ; `DECIDER_D_OUVRIR_UN_AGENT` / `REDIGER_BRIEF_AGENT` (une fois par inconnue nécessitant un agent).
 
-### Ce qu'elle fait bien / mal
-Elle est lisible, auditable, correspond au sens commun d'un pipeline à étapes. Elle est cependant grossière : un retour "Décision → Enquête" déclenché par une seule inconnue oblige à repasser conceptuellement par toute la porte de la phase, sans découpage plus fin ; elle traite tout le lot d'inconnues avant toute décision, ce qui est inefficace si le travail est très hétérogène ; et elle ne pousse pas l'audit de sa propre rigueur (elle utilise l'isolement et l'arbitrage à l'aveugle sans jamais vérifier `QUALIFIER_INDEPENDANCE_OBTENUE` ni `DETECTER_ERREURS_CORRELEES` — faiblesse assumée, corrigée par une autre approche).
-
 ### Fonctions laissées de côté
 `PARALLELISER_ENQUETE` et `ARRETER_ORCHESTRATION` : l'architecture garde l'enquête mono-fil par choix, elle n'ouvre pas de flotte d'agents à arrêter. `QUALIFIER_INDEPENDANCE_OBTENUE`, `DETECTER_ERREURS_CORRELEES` : l'isolement et l'arbitrage à l'aveugle sont appliqués mais jamais audités eux-mêmes — un choix délibéré de simplicité, documenté comme faiblesse.
 
@@ -400,12 +397,6 @@ FONCTION PLANIFIER(demande):
 
 `CONFRONTATION` (au moins 2 + N la première fois, jusqu'à deux fois ce total si redo) ; `CONTROLER_CONTENU_FINAL` / `CONTROLER_INTEGRITE_DOCUMENT` / `FAIRE_CONTROLER_PAR_UN_TIERS` / `VERIFIER_COHERENCE_ENSEMBLE` (une fois par tentative, donc au plus 2) ; `ORIENTER_CHOIX` et `DISTINGUER_CHOIX_ET_CONSEQUENCE` (une fois par tentative) ; `REUTILISER_ACQUIS` (au moment du redo, pour ne pas rejouer ce que l'audit n'a pas contesté) ; `CHOISIR_MOYEN_DE_LEVEE` / `MENER_VERIFICATION` (une fois par inconnue en Vague 0, et à nouveau si l'audit produit des faits nouveaux nécessitant vérification).
 
-### 5. Forces / faiblesses
-
-**Bien** : le nombre de passages est borné *a priori* à une constante (2), indépendamment de la taille du plan — la terminaison ne dépend d'aucun budget par nœud à calibrer ; l'enquête étant totalement front-loaded, les confrontations elles-mêmes sont rapides et n'ont jamais à interrompre leur raisonnement pour aller chercher un fait ; très facile à auditer (deux vagues au plus, chacune traçable intégralement).
-
-**Mal** : coûteuse en cas d'échec — un seul choix litigieux mal évalué force à rejouer *tout* (problème, structure, et tous les autres choix), même ceux que l'audit n'a pas remis en cause, ce que `REUTILISER_ACQUIS` atténue sans l'éliminer ; la Vague 0 investit dans la levée d'inconnues qui ne serviront peut-être jamais (si PROBLÈME ou STRUCTURE prennent une direction qui les rend sans objet) ; moins réactive qu'une architecture qui pourrait corriger chirurgicalement un seul nœud.
-
 ---
 
 ---
@@ -562,9 +553,6 @@ PHASE 6 — LIVRAISON
 
 ### Fonctions appelées plusieurs fois
 `ATTAQUER_TOUT_LE_CHAMP` : trois fois, à trois grains différents (le cadrage, le champ d'options d'une décision, les combinaisons de branches du plan) — signature de cette architecture. `ATTAQUER_UNE_OPTION` : une fois par option par décision. `ISOLER_LES_EVALUATIONS` / `QUALIFIER_INDEPENDANCE_OBTENUE` / `DETECTER_ERREURS_CORRELEES` : à trois étages distincts (fait, option, document) avec les mêmes primitives. `REFUSER_AUTO_CONFIRMATION` / `INTEGRER_RETOUR_AGENT` : à chaque retour d'agent, quel qu'il soit. `DECIDER_D_OUVRIR_UN_AGENT` / `REDIGER_BRIEF_AGENT` / `BORNER_UN_AGENT` : pour chaque investigation indépendante et pour la contre-lecture tierce.
-
-### Ce qu'elle fait bien / mal
-Elle est la plus résistante à l'auto-persuasion : rien n'avance sur la seule foi de celui qui l'a produit, à tous les étages — c'est sa propriété la plus solide, et elle détecte des défauts que A et B (plus déclaratives, un contrôle qui coche ses propres cases) peuvent laisser passer, notamment la contamination entre évaluations censées indépendantes. En contrepartie, c'est la plus coûteuse en agents ouverts et en appels (chaque investigation pivot est doublée) ; et son risque propre est que l'attaque ne soit jamais satisfaite — d'où la nécessité du plafond de rounds, une pièce que A et B n'ont pas à porter. Sur un travail simple et à faible enjeu (que `QUALIFIER_FORME_TRAVAIL` / `EVALUER_EXIGENCE_TACHE` signaleraient dès la phase 0), cette architecture est en sur-qualité.
 
 ### Fonctions laissées de côté
 `AMORCER_DEPUIS_PLAN_EXISTANT` : même raison qu'en B, entrée par demande fraîche uniquement. `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : utilisé mais volontairement secondaire — cette architecture ne s'organise pas par découpage/fusion de sous-plans comme B, mais par étages d'épreuve contradictoire ; le concept de "vague rouverte" de B n'existe pas ici, remplacé par les plafonds de rounds.
@@ -787,12 +775,6 @@ FONCTION PLANIFIER(demande):
 
 `CONFRONTATION` (une fois par nœud, potentiellement rejouée après réouverture) ; `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` (à chaque priorisation d'agenda *et* à chaque insertion d'un nouveau nœud CHOIX) ; `DECIDER_D_OUVRIR_UN_AGENT` / `BORNER_UN_AGENT` / `REDIGER_BRIEF_AGENT` / `INTEGRER_RETOUR_AGENT` (une fois par domaine parallèle, potentiellement nombreuses fois) ; `REUTILISER_ACQUIS` (à chaque réouverture partielle, pour isoler ce qui ne dépend pas du fait invalidant) ; `NOMMER_FAIT_QUI_FERAIT_BASCULER` (à chaque verdict, sert de déclencheur de propagation).
 
-### 5. Forces / faiblesses
-
-**Bien** : la plus fidèle à la réalité du problème — rien n'oblige la structure à être figée avant que certains choix indépendants d'elle soient instruits ; la parallélisation est native et directement rattachée aux fonctions d'orchestration d'agents ; la règle « même motif ne rouvre pas deux fois » est un critère de terminaison honnête (fondé sur les faits, pas sur un chiffre arbitraire).
-
-**Mal** : la plus complexe à implémenter et à auditer (il faut maintenir un graphe, un mémo de réouverture, un ordonnanceur) ; le risque de "chatter" est réel si `NOMMER_FAIT_QUI_FERAIT_BASCULER` est mal calibré (des faits presque-nouveaux qui rouvrent en cascade) ; moins lisible a posteriori qu'une cascade linéaire pour quelqu'un qui relit le déroulé.
-
 ---
 
 ---
@@ -953,11 +935,6 @@ REDACTION ET CONTROLE FINAL
 ### Ce qu'elle laisse de côté
 
 - `ISOLER_LES_EVALUATIONS`, `ARBITRER_A_L_AVEUGLE`, `QUALIFIER_INDEPENDANCE_OBTENUE`, `DETECTER_ERREURS_CORRELEES`, `CHOISIR_ANGLES_ATTAQUE`, `ATTAQUER_TOUT_LE_CHAMP` : le rituel contradictoire complet (séparation stricte des évaluations, arbitrage à l'aveugle) est disproportionné pour un item traité isolément dans une file — cette architecture optimise le débit et la couverture des dépendances, pas la rigueur contradictoire de chaque décision prise une à une. C'est un vrai renoncement, pas un oubli (voir "faiblesses" plus bas) ; c'est précisément le terrain de une autre approche.
-
-### Forces et faiblesses
-
-**Fait bien :** épouse naturellement des tâches où les inconnues et les décisions sont enchevêtrées et où l'ordre "correct" n'est pas connu à l'avance — pas de rebond coûteux entre "phases", juste une réinsertion locale dans la file. Excellent pour maximiser le parallélisme (agents groupés par domaine via `PARALLELISER_ENQUETE`) et pour ne jamais traiter un point avant que ses préalables soient réellement réglés (dépendances explicites, pas d'ordre arbitraire).
-**Fait mal :** moins lisible de l'extérieur — il n'y a pas de "où en est-on" simple, juste un état de file à un instant T, ce qui complique l'audit humain en cours de route. Le contradictoire allégé sur les décisions (une seule attaque, pas d'isolement) l'expose à des biais contrairement à une approche purement séquentielle éliminerait ; à réserver aux décisions à faible enjeu ou à compléter ponctuellement par un passage adversarial pour les décisions dont `QUALIFIER_PORTEE_DECISION` révèle un fort impact.
 
 ---
 
@@ -1234,11 +1211,6 @@ Terminaison garantie : chaque boucle interne est bornée numériquement (2 tenta
 - `DECIDER_D_OUVRIR_UN_AGENT` / `ARRETER_ORCHESTRATION` : à chaque inconnue candidate à la délégation, pour éviter d'ouvrir des agents en boucle.
 - `EPROUVER_RETOUR_ARRIERE`, `CONTROLER_TAILLE_DES_ETAPES` : itérées jusqu'à validation.
 
-### Ce que ça fait bien / mal
-
-**Bien** : la dépendance entre décisions est explicite et respectée — on ne tranche jamais un point avant ce dont il dépend ; les réparations sont chirurgicales (on ne rouvre que ce qui est affecté) ; bonne traçabilité nœud par nœud.
-**Mal** : le graphe de dépendances doit être construit correctement dès la phase 2 — s'il est mal formé, toute la suite hérite de l'erreur et la détection n'arrive qu'en phase 4 (coûteux à diagnostiquer) ; l'architecture ne compare jamais des *plans entiers* concurrents, seulement des options locales à un nœud, donc elle peut rater une solution radicalement différente qui n'aurait émergé qu'en repensant tout le squelette.
-
 ### Fonctions volontairement laissées de côté
 `ARBITRER_A_L_AVEUGLE`, `ISOLER_LES_EVALUATIONS`, `QUALIFIER_INDEPENDANCE_OBTENUE` : ces fonctions supposent un tournoi anonymisé entre plans concurrents complets — cette architecture n'en produit pas, elle résout nœud par nœud via les faits et les dépendances. `GARANTIR_DIVERSITE_METHODE` et `CHERCHER_APPROCHES_NON_ENVISAGEES` : pertinentes pour balayer large sur un problème entier, moins pour un choix local déjà cadré par ses voisins dans le graphe.
 
@@ -1421,7 +1393,6 @@ FONCTION TRANCHER_DECISION(décision, état_partagé):
 
 **4. Fonctions appelées plusieurs fois** : `DELIMITER_PERIMETRE`, `RECENSER_INCONNUES`/`CHOISIR_MOYEN_DE_LEVEE` (à chaque feuille), `MENER_VERIFICATION`, `VERIFIER_COHERENCE_ENSEMBLE`/`ORDONNER_PAR_PREREQUIS` (à chaque niveau de fusion), `QUALIFIER_PORTEE_DECISION` (à chaque décision remontée), `CONTROLER_TAILLE_DES_ETAPES`, `PRODUIRE_OPTIONS_DISTINCTES`/`ATTAQUER_UNE_OPTION` (à chaque décision tranchée) — parce que la structure même est récursive et que chaque nœud refait son propre mini-cycle de décision et de vérification.
 
-**5. Forces / faiblesses** : Très bon pour la traçabilité (le plan final ressemble à ce que l'utilisateur a demandé, `VERIFIER_COUVERTURE_OBJECTIFS` devient trivial) et pour des objectifs relativement indépendants. Mauvais quand les objectifs sont fortement enchevêtrés : la découpe crée des frontières artificielles, produit beaucoup de remontées de décisions et de reprises de fusion, et dilue les risques transverses (d'où la nécessité du garde-fou sur `QUALIFIER_RAYON_IMPACT`).
 
 ---
 
@@ -1572,9 +1543,6 @@ CONTRÔLE FINAL
 - `PLACER_JALONS_CONSTAT` : une file de travail rend l'avancement visible par son propre état (items résolus / restants) ; poser des jalons narratifs séparés ferait doublon avec ce que le registre donne déjà.
 - `REPERER_POINTS_ENGAGEMENT` : inclus tout de même en gouvernance, mais joue un rôle mineur — les points d'engagement sont déjà en grande partie visibles comme arêtes de dépendance dans le graphe de décisions.
 
-### Bilan
-**Bien** : colle naturellement à des tâches où les inconnues et décisions s'enchevêtrent (une inconnue en aval peut immédiatement rouvrir une décision en amont, sans détour par une phase) ; évite le travail à vide des phases non pertinentes ; parallélisation des enquêtes indépendantes native. **Mal** : plus difficile à auditer qu'un pipeline (l'ordre réel dépend de l'exécution, pas d'une structure fixe) ; le risque de « ping-pong » entre items est réel et repose entièrement sur la discipline de profondeur/compteur K pour ne pas déraper — un bug dans ce garde-fou est plus dangereux ici qu'en A.
-
 ---
 
 ---
@@ -1713,9 +1681,6 @@ CONTRÔLE FINAL
 ### Ce qui est laissé de côté
 - `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` : cette architecture ne construit pas de graphe global de dépendances en amont — l'ordre émerge passe après passe (contenu avant options avant faits avant risques avant étapes), ce que la cascade elle-même impose déjà.
 - `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : fragmenter en sous-plans casserait la discipline de cascade (chaque sous-plan devrait repasser par toutes les passes séparément, ce qui n'a pas de sens tant que l'option n'est pas figée) ; le surdimensionnement se traite uniquement par `ELAGUER_ETAPES_INUTILES` / `CONTROLER_TAILLE_DES_ETAPES` en Étape 3.
-
-### Bilan
-**Bien** : détecte tôt et à moindre coût les problèmes mal posés ou les options fragiles, avant d'avoir investi dans la levée exhaustive des inconnues (la Passe Faits est paresseuse, contrairement à A) ; le mécanisme de rebond borné par couple de passes est un garde-fou de terminaison particulièrement solide et explicite. **Mal** : le brouillon initial volontairement sous-vérifié peut donner une fausse impression d'avancement rapide alors que l'essentiel du travail est dans les passes ; le suivi de « qui a rebondi vers qui » ajoute un état global à maintenir, plus difficile à expliquer simplement qu'un compteur de tours par phase.
 
 ---
 
@@ -1881,11 +1846,6 @@ NIVEAU 5 — Éprouver le plan entier
 
 - `ORDONNER_INCONNUES_SANS_ECARTER` : cette architecture ne construit pas de file de priorité globale — les inconnues sont traitées au fil du NIVEAU 2 dans l'ordre où elles bloquent la construction, pas selon un classement coût/impact explicite ; ce mécanisme de priorisation est le cœur de une autre approche, pas de celle-ci.
 
-### Forces et faiblesses
-
-**Fait bien :** c'est particulièrement rigoureuse — rien n'entre dans le plan final (fait, option, ou plan lui-même) sans avoir subi une tentative sincère de le faire échouer, avec isolement et indépendance vérifiée. Très adaptée aux décisions à fort enjeu, irréversibles, ou pour lesquelles une erreur serait coûteuse à découvrir à l'exécution.
-**Fait mal :** coûteuse et potentiellement disproportionnée pour une tâche simple — d'où la nécessité réelle d'`EVALUER_EXIGENCE_TACHE` en amont pour ne pas déployer tout l'appareil contradictoire sur un problème trivial. La récursivité (surtout via `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER`, chaque sous-plan retraversant les 5 niveaux) peut devenir difficile à borner en pratique si le découpage produit lui-même des sous-plans nombreux ; elle demande une discipline stricte sur les compteurs de tours pour ne pas devenir, malgré les garde-fous théoriques, extrêmement longue à dérouler.
-
 ---
 
 
@@ -2043,7 +2003,6 @@ FONCTION ASSEMBLER_PLAN(état_partagé):
 
 **4. Fonctions appelées plusieurs fois** : `RECENSER_INCONNUES`/`QUALIFIER_PORTEE_INCONNUE` (à chaque nœud), `CHOISIR_MOYEN_DE_LEVEE` (par inconnue, potentiellement plusieurs fois), `MENER_VERIFICATION`, `CONSIGNER_PROVENANCE_FAIT`, `REFUSER_AUTO_CONFIRMATION`, `REDIGER_BRIEF_AGENT`/`BORNER_UN_AGENT`/`INTEGRER_RETOUR_AGENT` (à chaque sous-agent), `DECIDER_D_OUVRIR_UN_AGENT`/`ARRETER_ORCHESTRATION` (à chaque nœud, pour juger de continuer) — parce que la valeur de cette architecture est justement de traiter l'incertitude par petites doses répétées, jamais en un seul passage.
 
-**5. Forces / faiblesses** : Excellente pour des besoins où le risque principal est factuel (faisabilité, dépendances externes, technique) et où le parallélisme des agents apporte une vraie valeur ; discipline anti-hallucination forte (contradictions, provenance, péremption). Faible pour structurer l'exécution elle-même : le plan est dérivé après coup, en un seul passage plat, donc moins naturellement traçable objectif-par-objectif que A ; risque de sur-enquêter si `ARRETER_ORCHESTRATION` est mal calibré.
 
 ---
 
@@ -2254,11 +2213,6 @@ Terminaison garantie par : la structure en passes strictement ordonnées (on ne 
 - `VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN`, `VERIFIER_FAISABILITE_PAR_EXECUTANT`, `VERIFIER_COUVERTURE_BLOQUANTS`, `CONTROLER_TAILLE_DES_ETAPES` : répétées jusqu'à validation, à chaque porte concernée.
 - `REUTILISER_ACQUIS` : à chaque passe suivante, pour ne pas redémontrer ce que les passes précédentes ont déjà établi.
 
-### Ce que ça fait bien / mal
-
-**Bien** : il existe toujours un plan complet et cohérent à chaque instant, même minimal — utile si l'enquête doit être interrompue ; le travail d'approfondissement (options, attaques, risques) n'est dépensé que là où le squelette l'exige réellement, pas partout uniformément ; les boucles de correction sont courtes car elles ciblent une passe précise, jamais un redémarrage complet, sauf la porte 3 qui reste bornée à une fois.
-**Mal** : le choix fait en Passe 1 (« une option domine clairement ») peut ancrer prématurément une direction que l'épaississement en Passe 3 ne remettra en cause que localement — contrairement au tournoi de une autre approche, il n'y a pas de vraie compétition de plans entiers ; l'ordre strict des passes peut forcer à traiter la gouvernance (Passe 5) avant d'avoir totalement stabilisé la robustesse si une boucle de correction tardive rouvre la Passe 3.
-
 ---
 
 
@@ -2405,7 +2359,6 @@ FONCTION DEVELOPPER_OPTION(option, périmètre, état_partagé):
 
 **4. Fonctions appelées plusieurs fois** : `PRODUIRE_OPTIONS_DISTINCTES` (racine et chaque sous-choix récursif), `ATTAQUER_UNE_OPTION` (chaque option, plusieurs passes possibles), `CHOISIR_ANGLES_ATTAQUE`, `ISOLER_LES_EVALUATIONS`, `ARBITRER_A_L_AVEUGLE` (à chaque niveau du tournoi), `RATTACHER_TOUTE_PIECE_A_SON_ORIGINE`, `CONSERVER_OPTIONS_ECARTEES` — parce que l'architecture réplique tout le cycle sur chaque hypothèse rivale plutôt que de le dérouler une fois.
 
-**5. Forces / faiblesses** : Excellente quand le vrai risque est le choix lui-même (décision à fort enjeu, plusieurs stratégies plausibles) ; garantit une décision robuste, non biaisée par le vote, avec traçabilité forte des options écartées. Coûteuse et mal adaptée quand le problème est surtout un problème d'exécution méthodique sans vrai dilemme : elle développe alors des options jusqu'au bout pour rien, et la couverture des objectifs multiples (`VERIFIER_COUVERTURE_OBJECTIFS`) doit être repassée après coup sur l'option gagnante, car ce n'est pas elle qui structure la récursion.
 
 ---
 
@@ -2595,9 +2548,6 @@ PHASE 7 — CONTRÔLE FINAL
 ### Ce qui est laissé de côté
 - `AMORCER_DEPUIS_PLAN_EXISTANT` : cette architecture démarre toujours d'une demande fraîche en Phase 0 ; elle n'a pas de point d'entrée alternatif sans casser sa discipline de verrouillage séquentiel.
 - `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : un pipeline à portes ne recomposerait pas proprement un sous-cycle de phases en cours de route — le surdimensionnement se traite uniquement par `CONTROLER_TAILLE_DES_ETAPES` / `ELAGUER_ETAPES_INUTILES`.
-
-### Bilan
-**Bien** : lisible, auditable, chaque étape sait exactement ce qu'elle doit avoir en main avant d'avancer ; convient à une exécution stricte de la contrainte « rien n'est reporté à l'exécution », car chaque porte est un point de non-retour explicite. **Mal** : rigide face à des inconnues qui traversent les phases (une inconnue découverte en Phase 5 doit reculer artificiellement jusqu'en Phase 2) ; lent sur les tâches simples car toutes les phases s'exécutent même quand elles seraient vides.
 
 ---
 
@@ -2816,12 +2766,6 @@ FONCTION PLANIFIER(demande):
 
 `CONFRONTATION` (au moins 3 fois, souvent plus avec les reprises) ; `CONSIGNER_CE_QUI_A_TRANCHE`, `QUALIFIER_ETAT_RESOLUTION`, `NOMMER_FAIT_QUI_FERAIT_BASCULER` (une fois par confrontation) ; `CHOISIR_MOYEN_DE_LEVEE` / `MENER_VERIFICATION` (une fois par inconnue) ; `REUTILISER_ACQUIS` (à chaque réouverture, pour ne pas rejouer le dossier déjà validé) ; `SOUMETTRE_ARBITRAGE_UTILISATEUR` (potentiellement à chaque palier, en dernier recours).
 
-### 5. Forces / faiblesses
-
-**Bien** : la plus simple à raisonner et à implémenter ; la terminaison se prouve par un compteur trivial ; l'ordre problème→structure→choix colle exactement à l'intuition de dépendance (on ne discute pas un choix avant d'avoir un squelette stable). Facile à auditer a posteriori (on peut relire la pile des paliers comme un journal linéaire.
-
-**Mal** : rigide — si deux choix litigieux indépendants pointent vers le même défaut de structure, on repasse par le palier 2 deux fois au lieu de fusionner l'information ; aucune parallélisation (les confrontations de choix, bien qu'indépendantes entre elles, sont traitées séquentiellement) ; le budget est arbitraire (pourquoi 1 et 2 ?) et peut couper une réouverture légitime au profit d'un arbitrage utilisateur qu'on aurait pu éviter.
-
 ---
 
 ---
@@ -3020,11 +2964,6 @@ PHASE 7 — Rédaction et contrôle final
 - `AVANCER_L_HYPOTHESE_LA_PLUS_FRAGILE` : l'ordre de traitement des décisions est fixé par `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` (prérequis), pas par un critère de fragilité concurrent — les deux critères d'ordonnancement seraient redondants dans un pipeline à un seul passage.
 - `DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER` : un pipeline à portes suppose un unique passage linéaire ; découper reviendrait à instancier récursivement tout le pipeline, ce que ce squelette ne prévoit pas (mentionné comme cas exceptionnel, non structurant).
 - `ARRETER_ORCHESTRATION` : chaque phase borne elle-même son effort (porte de sortie) ; il n'y a pas d'orchestration ouverte à interrompre puisque les agents de PHASE 3 traitent chacun une inconnue isolée et bornée par `BORNER_UN_AGENT`.
-
-### Forces et faiblesses
-
-**Fait bien :** lisibilité maximale, traçabilité de "où en est-on", garantie qu'aucune phase n'avance sur du sable (chaque porte est un point de contrôle net). Idéal pour un exécutant humain qui veut suivre le raisonnement pas à pas, et pour l'auditabilité.
-**Fait mal :** rigide face aux tâches où les inconnues et les décisions sont fortement enchevêtrées — une petite décision de PHASE 4 peut faire rebondir tout le monde en PHASE 3, avec un coût de "changement de phase" à chaque aller-retour. Peu adapté aux tâches très parallélisables ou très itératives, où l'on voudrait traiter les problèmes dans leur ordre naturel d'apparition plutôt que dans l'ordre imposé des phases.
 
 ---
 
@@ -3225,11 +3164,6 @@ Terminaison garantie par : la borne numérique sur chaque boucle, plus le fait q
 - `CONSIGNER_PROVENANCE_FAIT` / `VERIFIER_ADOSSEMENT_AFFIRMATIONS` : pour chaque fait du socle partagé, puis à nouveau en contrôle final sur l'ensemble du plan raffiné.
 - `VERIFIER_COHERENCE_ENSEMBLE` : une fois par tentative de la boucle 9.
 
-### Ce que ça fait bien / mal
-
-**Bien** : les options comparées sont de vrais plans entiers, pas des variantes de vocabulaire — `GARANTIR_DIVERSITE_METHODE` le garantit explicitement ; l'isolement des évaluations (`ISOLER_LES_EVALUATIONS`, `ARBITRER_A_L_AVEUGLE`) protège contre la contamination et le biais de plaidoyer ; avoir des dauphins déjà connus (`CONSERVER_OPTIONS_ECARTEES`) rend la boucle de repêchage (8) très bon marché.
-**Mal** : coûteux — chaque option est développée jusqu'à un squelette complet avant d'être potentiellement jetée ; le socle partagé (Phase 2) doit être vraiment neutre, sinon il biaise silencieusement toutes les options de la même façon sans que le tournoi puisse le détecter ; les décisions fines à l'intérieur du plan gagnant ne bénéficient d'aucune mise en concurrence, seulement le choix de haut niveau.
-
 ### Fonctions volontairement laissées de côté
 `QUALIFIER_TERRITOIRE`, `DISTINGUER_ETAPE_ESSENTIELLE_ET_MECANIQUE`, `CHERCHER_ALTERNATIVE_A_UN_PAS_DIT_MECANIQUE` : ces fonctions instruisent un doute nœud par nœud sur le caractère mécanique d'une étape — orthogonal au principe ici, qui compare des plans entiers plutôt que d'interroger chaque étape individuellement.
 
@@ -3378,9 +3312,6 @@ PHASE E — LIVRAISON
 
 ### Fonctions appelées plusieurs fois
 Tout le contenu de B1/B2/B3 est rejoué **une fois par vague** (au lieu d'une fois pour tout le plan) : `PRODUIRE_OPTIONS_DISTINCTES`, `ATTAQUER_UNE_OPTION`, `CONSIGNER_CE_QUI_A_TRANCHE`, `DEFINIR_ATTENDU_OBSERVABLE`, etc. `ETABLIR_DEPENDANCES_ENTRE_DECISIONS` est consulté à chaque début de vague pour calculer la couche suivante. `REUTILISER_ACQUIS` et `RATTACHER_TOUTE_PIECE_A_SON_ORIGINE` sont appelés à chaque vague. `VERIFIER_COHERENCE_ENSEMBLE` est appelé de façon incrémentale (à chaque fermeture de vague, portée croissante) puis une fois de façon globale en phase C.
-
-### Ce qu'elle fait bien / mal
-Elle s'adapte à un travail hétérogène : les parties simples (peu d'inconnues, décisions indépendantes) se ferment vite en vague 1 sans attendre le reste ; elle permet un vrai parallélisme (`PARALLELISER_ENQUETE` par vague, puisque les décisions d'une même vague sont par construction indépendantes) ; ses retours sont chirurgicaux (on rouvre une vague, pas une catégorie fonctionnelle entière). En contrepartie, elle est plus complexe à implémenter — maintenir et corriger un graphe de dépendances vivant est lui-même source d'erreur — et sur un problème en réalité linéaire, le découpage en vagues ajoute de la charge sans bénéfice ; la cohérence globale n'est vérifiée complètement qu'en phase C, donc des incohérences transverses entre vagues éloignées peuvent rester longtemps invisibles.
 
 ### Fonctions laissées de côté
 `AMORCER_DEPUIS_PLAN_EXISTANT` : l'architecture suppose une entrée par demande fraîche, pas une reprise depuis un plan existant (même emplacement possible en Phase 0, non modélisé ici pour rester net).
