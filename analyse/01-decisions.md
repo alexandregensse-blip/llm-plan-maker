@@ -417,6 +417,26 @@ Un plan d'origine étrangère ne porte aucune structure enregistrée : le niveau
 
 ---
 
+## D-30 — Épuisement des options écartées
+
+Lorsque la vérification de faisabilité par l'exécutant échoue, le choix n'est pas rejoué : l'option suivante parmi celles qui avaient été conservées est reprise, et cette seule vérification est refaite.
+Si toutes les options conservées échouent à leur tour, le champ est épuisé.
+Ce cas est alors traité exactement comme celui d'une confrontation où aucune proposition ne tient : le point passe à l'utilisateur.
+Aucune issue nouvelle n'est créée, et le traitement ne s'arrête pas de lui-même.
+
+---
+
+## D-31 — Indépendance faible après épuisement des angles
+
+Lorsque l'indépendance obtenue entre concurrents reste faible alors que tous les angles d'attaque disponibles ont été employés, le traitement se poursuit.
+Il n'interroge pas l'utilisateur : il n'y a rien à lui demander.
+L'indépendance obtenue est consignée au registre telle qu'elle est.
+
+Motif : une faiblesse de méthode consignée n'est pas un point ouvert du plan.
+Le principe « un plan livré ne contient jamais de point ouvert » porte sur le contenu du plan, pas sur la qualité des moyens employés pour l'écrire.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
