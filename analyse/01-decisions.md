@@ -391,6 +391,18 @@ Le jeu passe à 133 fonctions.
 
 ---
 
+## D-28 — Le redécoupage est autorisé, adossé à un fait nouveau
+
+Lorsque deux sous-plans ne se raccordent pas et que l'incohérence révèle que le découpage lui-même était mauvais, figer l'interface ne corrige rien.
+Le redécoupage est alors autorisé, à une seule condition : qu'un fait nouveau, absent du registre des faits, le justifie.
+C'est la règle qui gouverne déjà la réouverture de toute décision close.
+Elle préserve la garantie d'arrêt du traitement, puisque le registre des faits ne fait que croître et que les redécoupages sont donc en nombre fini.
+Sans fait nouveau, le point remonte à l'utilisateur.
+
+Écarté : l'escalade systématique, qui faisait remonter à l'utilisateur un défaut que le système savait corriger.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
