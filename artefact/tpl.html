@@ -1,0 +1,435 @@
+<title>Architecture plan-suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF1F0; --surface:#F8F9F8; --panel:#E7EBEA;
+  --ink:#162025; --ink-2:#31424A; --muted:#65767D; --rule:#D3DAD9;
+  --accent:#2E5C72; --accent-soft:#DDE7EC;
+  --dette:#A33F2C; --quittance:#2B6653;
+  --slate:#162126; --slate-2:#1D2B32; --chalk:#DCE6E9; --chalk-dim:#8FA8B4;
+  --kw:#162025; --fn:#2E5C72; --cm:#7E8F96; --str:#7A5230;
+  --ff-d:"Spectral",Georgia,"Times New Roman",serif;
+  --ff-u:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --ff-m:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1519; --surface:#151E22; --panel:#182328;
+    --ink:#DEE7E9; --ink-2:#B4C5CA; --muted:#84969C; --rule:#263238;
+    --accent:#83B8CE; --accent-soft:#1B2B33;
+    --dette:#D3806D; --quittance:#72B89D;
+    --kw:#DEE7E9; --fn:#83B8CE; --cm:#6D8188; --str:#C69C6D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1519; --surface:#151E22; --panel:#182328;
+  --ink:#DEE7E9; --ink-2:#B4C5CA; --muted:#84969C; --rule:#263238;
+  --accent:#83B8CE; --accent-soft:#1B2B33;
+  --dette:#D3806D; --quittance:#72B89D;
+  --kw:#DEE7E9; --fn:#83B8CE; --cm:#6D8188; --str:#C69C6D;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--ff-d);font-size:20px;line-height:1.58;
+  -webkit-font-smoothing:antialiased;}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.wrap{max-width:none;margin:0;padding:0 32px 120px;
+  display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:1060px){
+  .wrap{grid-template-columns:238px minmax(0,1fr);gap:54px;padding-right:24px}
+}
+
+/* ---------- masthead ---------- */
+.mast{grid-column:1/-1;padding:64px 0 40px;border-bottom:1px solid var(--rule);margin-bottom:44px}
+.eyebrow{font-family:var(--ff-u);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);display:flex;flex-wrap:wrap;gap:0 18px;margin:0 0 20px}
+h1{font-family:var(--ff-d);font-weight:300;font-size:clamp(46px,8vw,86px);line-height:.98;margin:0;
+  letter-spacing:-.02em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:300}
+.lede{max-width:66ch;font-size:22px;color:var(--ink-2);margin:22px 0 0}
+.lede strong{font-weight:600;color:var(--ink)}
+
+/* ---------- index rail ---------- */
+.rail{font-family:var(--ff-u);font-size:13.5px}
+@media (min-width:1060px){.rail{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto}}
+.rail h2{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 12px;font-family:var(--ff-u);font-weight:600}
+.rail nav{display:flex;flex-direction:column;border-left:1px solid var(--rule)}
+.rail a{display:block;padding:5px 0 5px 14px;color:var(--ink-2);text-decoration:none;
+  border-left:2px solid transparent;margin-left:-1px;line-height:1.35}
+.rail a:hover{color:var(--accent);border-left-color:var(--accent)}
+.rail a.on{color:var(--ink);font-weight:600;border-left-color:var(--accent);background:var(--surface)}
+@media (max-width:1059px){
+  .rail{margin-bottom:40px;border:1px solid var(--rule);background:var(--surface);padding:16px}
+  .rail nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));border-left:0;gap:2px}
+  .rail a{border-left:0;padding-left:0}
+}
+
+/* ---------- sections ---------- */
+main{min-width:0}
+section{margin:0 0 58px;scroll-margin-top:24px}
+h2.sec{font-family:var(--ff-u);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:600;color:var(--accent);margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+p{margin:0 0 17px;max-width:none}
+.muted{color:var(--muted)}
+
+/* decisions */
+.decisions{display:grid;gap:26px;counter-reset:dec}
+.dec{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.dec::before{counter-increment:dec;content:counter(dec);font-family:var(--ff-m);font-size:13px;
+  color:var(--accent);border:1px solid var(--rule);width:30px;height:30px;display:grid;place-items:center;
+  background:var(--surface);margin-top:2px}
+.dec h3{font-family:var(--ff-d);font-size:21px;font-weight:600;margin:0 0 6px;line-height:1.25}
+.dec p{margin:0}
+
+.sub-h{font-family:var(--ff-u);font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);margin:30px 0 12px}
+
+/* steps */
+.steps{counter-reset:st;list-style:none;padding:0;margin:0 0 18px;display:grid;gap:16px}
+.steps li{max-width:none;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.steps li::before{counter-increment:st;content:counter(st);font-family:var(--ff-m);font-size:12px;
+  color:var(--accent);border:1px solid var(--rule);width:26px;height:26px;display:grid;place-items:center;
+  background:var(--surface);margin-top:3px}
+.steps b{font-weight:600}
+
+/* lexique */
+.lex{display:grid;gap:0;border-top:1px solid var(--rule)}
+.lex div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:13px 0;border-bottom:1px solid var(--rule)}
+.lex .src{display:block;font-family:var(--ff-u);font-size:11.5px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.lex .src i{font-style:normal;font-family:var(--ff-m);text-transform:none;letter-spacing:0}
+.lex p b{font-weight:600;color:var(--ink);font-family:var(--ff-d);font-size:inherit}
+.lex dt,.lex > div > b{font-family:var(--ff-m);font-size:13.5px;font-weight:600;color:var(--accent);letter-spacing:.01em}
+.lex p{margin:0;font-size:17.5px}
+@media (max-width:640px){.lex div{grid-template-columns:1fr;gap:4px}}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:16.5px}
+th,td{text-align:left;vertical-align:top;padding:13px 16px;border-bottom:1px solid var(--rule)}
+thead th{font-family:var(--ff-u);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;background:var(--panel)}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+tbody th{font-weight:400;white-space:normal;width:1%}
+table.recap tbody th{font-family:var(--ff-u);font-size:13.5px;font-weight:600;white-space:normal;width:150px}
+table.recap td{font-size:15.5px}
+table.boucles tbody th{font-family:var(--ff-u);font-size:13px;font-weight:600;white-space:normal;width:190px}
+table.boucles td{font-size:14.5px}
+.chip{font-family:var(--ff-u);font-size:13px;font-weight:600;padding:0;
+  display:inline-block;line-height:1.35;max-width:18ch}
+.chip.d{color:var(--dette)}
+
+/* blocks */
+.block{border-top:1px solid var(--rule);padding-top:26px;margin-bottom:64px;scroll-margin-top:24px}
+.block-h{display:flex;align-items:baseline;gap:16px;margin-bottom:12px}
+.bn{font-family:var(--ff-m);font-size:12px;font-weight:600;color:var(--accent);
+  border:1px solid var(--rule);padding:3px 8px;background:var(--surface);letter-spacing:.06em}
+.block h3{font-family:var(--ff-d);font-size:31px;font-weight:600;margin:0;letter-spacing:-.01em;line-height:1.2}
+.role{color:var(--ink-2)}
+.note{font-size:17.5px;color:var(--muted);border-left:2px solid var(--accent);
+  padding-left:16px;margin-top:18px}
+.note strong{color:var(--ink-2)}
+.sub{margin-top:30px}
+.sub h4{font-family:var(--ff-u);font-size:13px;font-weight:600;letter-spacing:.06em;margin:0 0 10px;
+  color:var(--ink-2);text-transform:uppercase}
+
+/* listings */
+.listing{font-family:var(--ff-m);font-size:14.2px;line-height:1.62;background:var(--panel);
+  border:1px solid var(--rule);border-left:2px solid var(--accent);
+  padding:18px 20px;overflow-x:auto;margin:18px 0 0;white-space:pre;tab-size:2;color:var(--ink)}
+.listing code{font-family:inherit}
+.listing .fn{color:var(--fn);font-weight:500}
+.listing .kw{color:var(--kw);font-weight:600}
+.listing .cm{color:var(--cm);font-style:italic}
+.listing .cm .fn,.listing .cm .kw{color:inherit;font-weight:inherit}
+.listing .gu{color:var(--str)}
+
+.inl{font-family:var(--ff-m);font-size:.9em;background:var(--panel);padding:1px 5px;border:1px solid var(--rule)}
+
+/* replis */
+.fold{margin:18px 0 0;border:1px solid var(--rule);background:var(--surface)}
+.fold > summary{cursor:pointer;list-style:none;padding:9px 14px;font-family:var(--ff-u);
+  font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:9px;user-select:none}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary::before{content:"+";font-family:var(--ff-m);font-size:14px;color:var(--accent);
+  width:14px;text-align:center}
+.fold[open] > summary::before{content:"–"}
+.fold > summary:hover{color:var(--accent)}
+.fold[open] > summary{border-bottom:1px solid var(--rule)}
+.fold .listing{margin:0;border:0;border-left:2px solid var(--accent)}
+
+/* plates */
+.plate{margin:20px 0 0;background:var(--slate);border:1px solid var(--slate-2);color:var(--chalk)}
+.plate figcaption{display:flex;align-items:baseline;gap:14px;padding:10px 16px;
+  border-bottom:1px solid var(--slate-2);font-family:var(--ff-u);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase}
+.plate-n{color:var(--chalk-dim)}
+.plate-l{color:var(--chalk);letter-spacing:.06em;text-transform:none;font-size:12px}
+.plate-body{padding:26px 16px;overflow-x:auto;
+  background-image:radial-gradient(circle at 1px 1px,rgba(220,230,233,.055) 1px,transparent 0);
+  background-size:22px 22px}
+pre.mermaid{margin:0;text-align:center;min-height:40px;font-family:var(--ff-m);font-size:12px;color:var(--chalk-dim)}
+/* taille naturelle : jamais de reduction, defilement lateral si besoin */
+pre.mermaid svg{height:auto!important;max-width:none!important;display:block;margin:0 auto}
+
+/* open items */
+.opens{display:grid;gap:0;border-top:1px solid var(--rule)}
+.open-item{padding:16px 0;border-bottom:1px solid var(--rule)}
+.tag{font-family:var(--ff-u);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid currentColor;vertical-align:2px;margin-left:9px;font-weight:600}
+.tag.ok{color:var(--quittance)}
+.tag.no{color:var(--muted)}
+.open-item h4{font-family:var(--ff-d);font-size:19px;font-weight:600;margin:0 0 6px}
+.open-item p{margin:0;font-size:17.5px;color:var(--ink-2)}
+.open-item em{color:var(--muted)}
+
+/* invariants */
+.inv{list-style:none;padding:0;margin:0;display:grid;gap:0;border-top:1px solid var(--rule)}
+.inv li{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule);
+  font-size:17.5px}
+.ik{font-family:var(--ff-m);font-size:12.5px;font-weight:600;color:var(--accent);padding-top:3px}
+
+footer{grid-column:1/-1;margin-top:30px;padding-top:24px;border-top:1px solid var(--rule);
+  font-family:var(--ff-u);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 22px}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow"><span>plan-suite</span><span>architecture de production du plan</span><span>133 fonctions unitaires</span></p>
+  <h1>Architecture <em>plan-suite</em></h1>
+  <p class="lede">Le système maintient un <strong>registre de travail</strong>. Tout point non résolu y est inscrit, et n'en est retiré qu'une fois résolu. Le plan n'est rédigé que lorsque le registre est vide.</p>
+</header>
+
+<aside class="rail">
+  <h2>Sommaire</h2>
+  <nav>{{NAV}}</nav>
+</aside>
+
+<main>
+
+<section id="principe">
+  <h2 class="sec">Principe de fonctionnement</h2>
+  <p>Le traitement alterne deux opérations : <b>alimenter</b> le registre, puis le <b>résorber</b>. Il itère jusqu'à ce qu'une itération n'ajoute plus rien et que le registre soit vide. Le plan est alors rédigé.</p>
+
+  <h3 class="sub-h">Alimentation — deux sources indépendantes</h3>
+  <ol class="steps">
+    <li><span><b>Lecture de la demande.</b> Une liste fixe de douze questions est posée au problème — du périmètre aux inconnues, en passant par les contraintes dures, les obligations formelles, l'énoncé lui-même et les exigences tacites ; elle est donnée en entier au bloc 01. Chaque question reçoit une réponse écrite, « sans objet » compris, et une question à laquelle la lecture ne sait pas répondre se clôt par une entrée au registre comme les autres. Ce que cette passe produit, ce sont des entrées au registre, et rien d'autre : aucun fragment de plan n'est écrit ici. Les moyens employés pour répondre relèvent de la configuration, pas de l'architecture.</span></li>
+    <li><span><b>Interrogation du chemin.</b> Un premier enchaînement d'étapes est écrit, puis chaque étape est interrogée sur trois points : ce sur quoi elle repose, ce qu'elle décide sans le déclarer, et le critère observable de sa réussite.</span></li>
+  </ol>
+  <p>Les deux sources ne captent pas les mêmes omissions. La lecture de la demande capte ce que l'énoncé ne dit pas ; l'interrogation du chemin capte ce que le chemin présuppose. Ni l'une ni l'autre ne peut atteindre le domaine de la seconde, et c'est la raison pour laquelle les deux sont exécutées.</p>
+
+  <h3 class="sub-h">Résorption — un traitement par type d'entrée</h3>
+  <p>Chaque entrée du registre relève de l'un de cinq types, et chaque type a un traitement unique : un fait manquant est établi ; un point de décision qui relève de l'utilisateur lui est soumis ; une décision litigieuse est instruite par mise en concurrence ; une étape trop large devient un sous-plan ; un cas qui ne peut se révéler qu'à l'exécution devient une branche, après contrôle.</p>
+  <p>Une entrée n'est retirée qu'une fois résolue. Aucun seuil, aucun compteur d'essais, aucune clôture par déclassement de priorité.</p>
+  <p>Les questions restantes sont soumises à l'utilisateur en un seul envoi. Les réponses closent les entrées correspondantes. Le chemin est ensuite réécrit à partir des décisions arrêtées, et non corrigé par retouches.</p>
+  <p>L'itération suivante interroge les étapes nouvelles, ce qui peut produire de nouvelles entrées. Le registre converge néanmoins : les faits établis ne sont pas réétablis, et une décision arrêtée n'est rouverte que si un fait nouveau contredit une hypothèse qu'elle avait explicitée.</p>
+</section>
+
+<section id="conception">
+  <h2 class="sec">Contraintes de conception</h2>
+  <p>Trois exigences s'opposent : garantir l'exhaustivité et pouvoir en rendre compte ; traiter un travail qui excède un seul contexte ; et rester proportionné sur une demande courte. Quatre décisions les rendent compatibles.</p>
+  <div class="decisions">
+    <div class="dec"><div><h3>La part invariable, c'est la liste de questions — pas son coût</h3>
+      <p>Une seule opération est exécutée quelle que soit la demande : le crible, c'est-à-dire la liste de questions posée une fois au problème. Tout le reste — confrontations, enquêtes, sous-plans, mise en forme — ne se déclenche que sur des entrées effectivement inscrites au registre. La quantité de travail est donc dictée par le <em>nombre d'entrées</em>, qui est un compte, et non par une estimation d'effort. Une demande qui ne produit que des réponses sans objet ne déclenche rien au-delà du crible.</p></div></div>
+    <div class="dec"><div><h3>Deux sources d'alimentation indépendantes</h3>
+      <p>L'implicite se loge à deux endroits distincts. Dans l'énoncé : le crible l'y cherche, et il ne regarde pas l'enchaînement. Dans l'enchaînement : l'interrogation des étapes l'y révèle, et elle ne regarde pas l'énoncé. Ce que l'une ne peut pas voir, l'autre le voit — c'est pourquoi les deux sont maintenues.</p></div></div>
+    <div class="dec"><div><h3>La taille se traite par récursion, non par régime particulier</h3>
+      <p>Le critère de découpe est observable : une étape dont le critère de réussite ne s'énonce pas en un seul observable devient un sous-plan. Le même traitement s'y applique, avec le même registre. Un travail volumineux ne modifie pas l'algorithme ; il en multiplie les exécutions.</p></div></div>
+    <div class="dec"><div><h3>L'état du traitement est externalisé dans un fichier</h3>
+      <p>Cette décision conditionne les trois autres. Un modèle de langage ne maintient pas un graphe mutable ni des compteurs : il les simule au lieu de les suivre. Ici, rien n'est à mémoriser — le registre se lit, s'incrémente et se solde. Et ce n'est pas un document supplémentaire : c'est le fichier de traçabilité qui doit de toute façon consigner ce qui a été décidé et vérifié, simplement tenu au fil de l'eau.</p></div></div>
+  </div>
+</section>
+
+<section id="overview">
+  <h2 class="sec">Vue d'ensemble</h2>
+  <p>Dix blocs numérotés, plus un sous-programme sans rang, <code class="inl">confronter()</code>, appelé depuis trois d'entre eux. Les blocs 04 à 07 sont regroupés en un seul nœud : ce sont les quatre temps d'une même itération. Ce schéma ne porte que les deux reprises qui traversent tout le parcours, et le refus à l'entrée ; les autres reprises sont locales à un bloc et figurent sur le schéma de ce bloc.</p>
+  <figure class="plate">
+    <figcaption><span class="plate-n">Schéma 00</span><span class="plate-l">Enchaînement général</span></figcaption>
+    <div class="plate-body"><pre class="mermaid">{{D_OVER}}</pre></div>
+  </figure>
+  <h3 class="sub-h" style="margin-top:36px">Entrées, fonction, sorties de chaque bloc</h3>
+  <div class="tw"><table class="recap">
+    <thead><tr><th>Bloc</th><th>Entrées</th><th>Fonction</th><th>Sorties</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">00 · Entrée</th>
+        <td>La demande, ou un plan existant — d'origine étrangère, ou issu du système avec son registre. La configuration des techniques autorisées.</td>
+        <td>Relever le cadre autorisé, les capacités disponibles, le destinataire du plan, la forme du travail et la nature du territoire. Décider s'il y a un problème de planification, ouvrir le registre de travail, puis évaluer ce que la tâche exige parmi les techniques autorisées.</td>
+        <td>Registre ouvert, cadre et capacités connus, acquis d'une passe antérieure repris. Ou refus motivé, sans plan.</td></tr>
+      <tr><th scope="row">01 · Crible</th>
+        <td>La demande, le cadre, les acquis repris.</td>
+        <td>Poser au problème une liste fixe de questions, avant qu'aucun enchaînement n'existe, et inscrire une réponse écrite à chacune.</td>
+        <td>Des entrées au registre, et une ligne unique groupant les réponses sans objet.</td></tr>
+      <tr><th scope="row">§ · confronter()</th>
+        <td>Une question, l'objet sur lequel elle porte, les faits établis, les critères d'acceptation ordonnés.</td>
+        <td>Produire des propositions par des méthodes imposées différentes, établir les faits dont elles dépendent, les attaquer isolément, marquer les hypothèses communes à toutes, faire trancher par un agent distinct.</td>
+        <td>Un verdict, et l'entrée close. Les pièces nommées par l'arbitre, chacune en entrée « décision ». Les options écartées conservées avec leur viabilité, et le fait qui ferait basculer, marqué. Ou, si aucune proposition ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">02 · Niveau 1</th>
+        <td>Le registre alimenté par le crible. Le plan étranger, s'il y en a un, comme proposition.</td>
+        <td>Mettre en concurrence les lectures du besoin, arrêter la cible en termes observables et les critères d'acceptation, contrôler que la cible garantit l'effet recherché.</td>
+        <td>Besoin arrêté, cible, critères ordonnés. Ou une exigence manquante renvoyée au crible. Ou, si aucune lecture ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">03 · Niveau 2</th>
+        <td>Besoin arrêté, faits établis, enchaînement d'une passe antérieure si le registre en porte un.</td>
+        <td>Mettre en concurrence les enchaînements qui relient l'état actuel à la cible, chacun découpant selon un principe différent. Ou conserver l'enchaînement antérieur, tant qu'aucun des trois constats de réouverture ne se lit au registre.</td>
+        <td>L'enchaînement retenu : la suite ordonnée d'étapes. Ou, si aucun ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">04 · Itération</th>
+        <td>L'enchaînement courant, le registre.</td>
+        <td>Interroger chaque étape nouvelle sur trois points, et repasser le crible sur le couple besoin et enchaînement.</td>
+        <td>De nouvelles entrées au registre.</td></tr>
+      <tr><th scope="row">05 · Résorption</th>
+        <td>Les entrées ouvertes du registre.</td>
+        <td>Appliquer à chaque entrée le traitement unique de son type, sans qu'aucune puisse être retirée autrement.</td>
+        <td>Entrées closes, faits établis, décisions arrêtées, sous-plans, branches. Et les questions restées en attente.</td></tr>
+      <tr><th scope="row">06 · Envoi des questions</th>
+        <td>Les entrées « à soumettre » restées ouvertes.</td>
+        <td>Émettre en un seul envoi toutes les questions, attendre la réponse, la traiter selon sa nature.</td>
+        <td>Entrées closes par les réponses. Ou une entrée retypée en fait à établir. Ou une question reformulée dans le même échange, puis ramenée au besoin si elle ne tranche toujours pas. Ou le niveau 1 rouvert, si deux réponses se contredisent. Ou l'attente, si rien n'arrive.</td></tr>
+      <tr><th scope="row">07 · Réécriture</th>
+        <td>Les décisions arrêtées pendant l'itération.</td>
+        <td>Réécrire l'enchaînement depuis ces décisions, rattacher chaque étape à son origine, vérifier les quatre conditions de sortie.</td>
+        <td>Enchaînement réécrit et étapes neuves désignées. Ou sortie d'itération.</td></tr>
+      <tr><th scope="row">08 · Mise en forme</th>
+        <td>L'enchaînement stabilisé, le registre.</td>
+        <td>Repérer les points d'engagement, n'activer que sous cette condition l'appareil de risque, d'autorisation et de branche, contrôler la taille des étapes et élaguer.</td>
+        <td>Le plan mis en forme. Et, le cas échéant, de nouvelles entrées au registre.</td></tr>
+      <tr><th scope="row">09 · Contrôle</th>
+        <td>Le plan rédigé selon le modèle imposé, les critères d'acceptation, le besoin.</td>
+        <td>Soumettre le plan à deux relectures externes aux objets différents, trier leurs retours, router chaque défaut vers le bloc compétent.</td>
+        <td>Plan émis et registre clos. Ou des entrées renvoyées vers les blocs concernés.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="lexique">
+  <h2 class="sec">Lexique</h2>
+  <p>Un seul vocabulaire dans tout le document, pseudo-code compris. Les termes ci-dessous sont ceux qui seront retenus dans le skill.</p>
+  <div class="lex">
+    <div><b>registre de travail</b><p>Fichier unique où sont inscrits les points non résolus. Il tient également lieu de fichier de traçabilité.</p></div>
+    <div><b>entrée</b><p>Un point non résolu inscrit au registre, relevant d'un des cinq types.</p></div>
+    <div><b>clôture</b><p>La condition à laquelle une entrée est retirée. Trois états seulement : tranché, tranché avec compromis assumé, converti en branche. « En attente » et « non résolu » ne closent rien.</p></div>
+    <div><b>crible</b><p>La liste fixe de douze questions posée au problème. Passée une fois, elle ne produit que des entrées au registre.</p></div>
+    <div><b>enchaînement</b><p>La suite ordonnée d'étapes qui relie l'état actuel à la cible. C'est l'unique objet du niveau 2, et le découpage en est le grain.</p></div>
+    <div><b>itération</b><p>Un tour de traitement : interrogation des étapes nouvelles, repassage du crible, résorption, envoi des questions, réécriture de l'enchaînement.</p></div>
+    <div><b>envoi des questions</b><p>Le moment, unique dans une itération, où les questions accumulées au registre partent ensemble à l'utilisateur.</p></div>
+    <div><b>étape</b><p>L'unité de l'enchaînement. Elle a une origine écrite, un attendu observable unique, et c'est sur elle que portent les trois questions de l'itération.</p></div>
+    <div><b>pièce</b><p>Tout élément rattachable à une origine : une étape, une contrainte, un attendu, un fragment de décision. C'est l'unité que le rattachement à l'origine manipule, et celle qu'une réouverture vise.</p></div>
+    <div><b>point d'engagement</b><p>Une étape qui ferme une option ou consomme une ressource. C'est la seule chose qui rend atteignable l'appareil de risque et de retour arrière.</p></div>
+    <div><b>fait périssable</b><p>Fait dont la validité dépend de la date. Sa re-vérification est placée juste avant l'étape qui en dépend.</p></div>
+    <div><b>sous-plan</b><p>Étape trop large traitée à part, avec son périmètre, sa cible, ses critères locaux et les interfaces qu'elle garantit aux autres.</p></div>
+    <div><b>fait déterminant</b><p>Fait identifié comme pouvant renverser une décision, ou dont dépendent plusieurs étapes. Seul type de fait soumis à double établissement, par deux moyens de nature différente.</p></div>
+  </div>
+</section>
+
+<section id="types">
+  <h2 class="sec">Les cinq types d'entrée</h2>
+  <p>Toute entrée du registre relève d'un de ces types, et chaque type a un traitement unique.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Type</th><th>Origine</th><th>Traitement</th></tr></thead>
+    <tbody>{{DETTES}}</tbody>
+  </table></div>
+</section>
+
+<section id="blocs-intro">
+  <h2 class="sec">Pseudo-code</h2>
+  <p>Dix blocs numérotés dans l'ordre d'exécution, plus un sous-programme. Les pseudo-codes sont repliés : cliquer pour les ouvrir. Les identifiants en capitales désignent les fonctions disponibles : 133 primitives fixées en amont, que l'architecture enchaîne sans en introduire de nouvelle. Les lignes précédées de <code class="inl">#</code> sont des commentaires. Ce pseudo-code est tenu à jour avec les schémas et le texte : les uns et les autres disent la même chose.</p>
+</section>
+
+{{BLOCKS}}
+
+<section id="boucles">
+  <h2 class="sec">Boucles et terminaison</h2>
+  <p>Aucune reprise n'est déclenchée par une appréciation : chacune l'est par un constat nommé, qui désigne lui-même le point de reprise. Aucune boucle ne comporte de budget ni de nombre d'essais maximum. Chacune termine parce qu'une quantité croît ou décroît strictement, ce qui se vérifie par lecture du registre.</p>
+  <div class="tw"><table class="boucles">
+    <thead><tr><th>Boucle</th><th>Condition de déclenchement</th><th>Point de reprise</th><th>Argument de terminaison</th></tr></thead>
+    <tbody>{{BOUCLES}}</tbody>
+  </table></div>
+</section>
+
+<section id="invariants">
+  <h2 class="sec">Invariants</h2>
+  <p>Vrais à tout instant du traitement, et pour la plupart vérifiables par lecture du registre.</p>
+  <ul class="inv">{{INVAR}}</ul>
+</section>
+
+<section id="limites">
+  <h2 class="sec">Limites connues</h2>
+  <p>Un seul point. Ce qui relève des moyens employés — indépendance des concurrents, double lecture du crible, nombre d'agents ouverts — n'y figure pas : c'est l'affaire des techniques et de la configuration, pas de l'architecture.</p>
+  <div class="opens">{{OUVERT}}</div>
+</section>
+</main>
+
+<footer>
+  <span>plan-suite</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var KW = /(?:^|(?<=[\s(:;,]))(SI|SINON|POUR|TANT QUE|RÉPÉTER|RETOURNER|SORTIR|FIN|ALORS|chaque|INVARIANT|GARDE|TRI DES RETOURS)(?=[\s:,(]|$)/g;
+  var FN = /\b([A-Z][A-Z0-9_]*_[A-Z0-9_]+)\b/g;
+  var GU = /(«[^»]*»)/g;
+  document.querySelectorAll('pre.listing > code').forEach(function(el){
+    var out = el.textContent.split('\n').map(function(line){
+      var s = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var i = s.indexOf('#');
+      var code = i === -1 ? s : s.slice(0,i);
+      var cm   = i === -1 ? '' : s.slice(i);
+      code = code.replace(FN,'<span class="fn">$1</span>')
+                 .replace(KW,function(m0,k){return m0.replace(k,'<span class="kw">'+k+'</span>');})
+                 .replace(GU,'<span class="gu">$1</span>');
+      if (cm) cm = '<span class="cm">' + cm.replace(FN,'<span class="fn">$1</span>') + '</span>';
+      return code + cm;
+    }).join('\n');
+    el.innerHTML = out;
+  });
+})();
+</script>
+
+<script>
+/* Surbrillance, dans le sommaire, de la section en cours de lecture. */
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+  if (!links.length) return;
+  var map = {}, targets = [];
+  links.forEach(function(a){
+    var id = (a.getAttribute('href') || '').slice(1);
+    var el = id && document.getElementById(id);
+    if (el) { map[id] = a; targets.push(el); }
+  });
+  var current = null;
+  function mark(a){
+    if (!a || a === current) return;
+    if (current) current.classList.remove('on');
+    current = a; a.classList.add('on');
+    if (window.innerWidth >= 1060) {
+      var rail = a.parentNode, r = a.getBoundingClientRect(), b = rail.getBoundingClientRect();
+      if (r.top < b.top || r.bottom > b.bottom) a.scrollIntoView({ block: 'nearest' });
+    }
+  }
+  function update(){
+    var best = targets[0], bestTop = -Infinity;
+    targets.forEach(function(t){
+      var top = t.getBoundingClientRect().top - 96;
+      if (top <= 0 && top > bestTop) { bestTop = top; best = t; }
+    });
+    if (best) mark(map[best.id]);
+  }
+  var pending = false;
+  window.addEventListener('scroll', function(){
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function(){ update(); pending = false; });
+  }, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+})();
+</script>

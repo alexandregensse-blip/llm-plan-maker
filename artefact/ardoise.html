@@ -1,0 +1,1395 @@
+<title>Architecture plan-suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#EFF1F0; --surface:#F8F9F8; --panel:#E7EBEA;
+  --ink:#162025; --ink-2:#31424A; --muted:#65767D; --rule:#D3DAD9;
+  --accent:#2E5C72; --accent-soft:#DDE7EC;
+  --dette:#A33F2C; --quittance:#2B6653;
+  --slate:#162126; --slate-2:#1D2B32; --chalk:#DCE6E9; --chalk-dim:#8FA8B4;
+  --kw:#162025; --fn:#2E5C72; --cm:#7E8F96; --str:#7A5230;
+  --ff-d:"Spectral",Georgia,"Times New Roman",serif;
+  --ff-u:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --ff-m:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1519; --surface:#151E22; --panel:#182328;
+    --ink:#DEE7E9; --ink-2:#B4C5CA; --muted:#84969C; --rule:#263238;
+    --accent:#83B8CE; --accent-soft:#1B2B33;
+    --dette:#D3806D; --quittance:#72B89D;
+    --kw:#DEE7E9; --fn:#83B8CE; --cm:#6D8188; --str:#C69C6D;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1519; --surface:#151E22; --panel:#182328;
+  --ink:#DEE7E9; --ink-2:#B4C5CA; --muted:#84969C; --rule:#263238;
+  --accent:#83B8CE; --accent-soft:#1B2B33;
+  --dette:#D3806D; --quittance:#72B89D;
+  --kw:#DEE7E9; --fn:#83B8CE; --cm:#6D8188; --str:#C69C6D;
+}
+
+body{background:var(--paper);color:var(--ink);font-family:var(--ff-d);font-size:20px;line-height:1.58;
+  -webkit-font-smoothing:antialiased;}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- shell ---------- */
+.wrap{max-width:none;margin:0;padding:0 32px 120px;
+  display:grid;grid-template-columns:1fr;gap:0}
+@media (min-width:1060px){
+  .wrap{grid-template-columns:238px minmax(0,1fr);gap:54px;padding-right:24px}
+}
+
+/* ---------- masthead ---------- */
+.mast{grid-column:1/-1;padding:64px 0 40px;border-bottom:1px solid var(--rule);margin-bottom:44px}
+.eyebrow{font-family:var(--ff-u);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);display:flex;flex-wrap:wrap;gap:0 18px;margin:0 0 20px}
+h1{font-family:var(--ff-d);font-weight:300;font-size:clamp(46px,8vw,86px);line-height:.98;margin:0;
+  letter-spacing:-.02em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:300}
+.lede{max-width:66ch;font-size:22px;color:var(--ink-2);margin:22px 0 0}
+.lede strong{font-weight:600;color:var(--ink)}
+
+/* ---------- index rail ---------- */
+.rail{font-family:var(--ff-u);font-size:13.5px}
+@media (min-width:1060px){.rail{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto}}
+.rail h2{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  margin:0 0 12px;font-family:var(--ff-u);font-weight:600}
+.rail nav{display:flex;flex-direction:column;border-left:1px solid var(--rule)}
+.rail a{display:block;padding:5px 0 5px 14px;color:var(--ink-2);text-decoration:none;
+  border-left:2px solid transparent;margin-left:-1px;line-height:1.35}
+.rail a:hover{color:var(--accent);border-left-color:var(--accent)}
+.rail a.on{color:var(--ink);font-weight:600;border-left-color:var(--accent);background:var(--surface)}
+@media (max-width:1059px){
+  .rail{margin-bottom:40px;border:1px solid var(--rule);background:var(--surface);padding:16px}
+  .rail nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));border-left:0;gap:2px}
+  .rail a{border-left:0;padding-left:0}
+}
+
+/* ---------- sections ---------- */
+main{min-width:0}
+section{margin:0 0 58px;scroll-margin-top:24px}
+h2.sec{font-family:var(--ff-u);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:600;color:var(--accent);margin:0 0 18px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
+p{margin:0 0 17px;max-width:none}
+.muted{color:var(--muted)}
+
+/* decisions */
+.decisions{display:grid;gap:26px;counter-reset:dec}
+.dec{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start}
+.dec::before{counter-increment:dec;content:counter(dec);font-family:var(--ff-m);font-size:13px;
+  color:var(--accent);border:1px solid var(--rule);width:30px;height:30px;display:grid;place-items:center;
+  background:var(--surface);margin-top:2px}
+.dec h3{font-family:var(--ff-d);font-size:21px;font-weight:600;margin:0 0 6px;line-height:1.25}
+.dec p{margin:0}
+
+.sub-h{font-family:var(--ff-u);font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);margin:30px 0 12px}
+
+/* steps */
+.steps{counter-reset:st;list-style:none;padding:0;margin:0 0 18px;display:grid;gap:16px}
+.steps li{max-width:none;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.steps li::before{counter-increment:st;content:counter(st);font-family:var(--ff-m);font-size:12px;
+  color:var(--accent);border:1px solid var(--rule);width:26px;height:26px;display:grid;place-items:center;
+  background:var(--surface);margin-top:3px}
+.steps b{font-weight:600}
+
+/* lexique */
+.lex{display:grid;gap:0;border-top:1px solid var(--rule)}
+.lex div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:13px 0;border-bottom:1px solid var(--rule)}
+.lex .src{display:block;font-family:var(--ff-u);font-size:11.5px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.lex .src i{font-style:normal;font-family:var(--ff-m);text-transform:none;letter-spacing:0}
+.lex p b{font-weight:600;color:var(--ink);font-family:var(--ff-d);font-size:inherit}
+.lex dt,.lex > div > b{font-family:var(--ff-m);font-size:13.5px;font-weight:600;color:var(--accent);letter-spacing:.01em}
+.lex p{margin:0;font-size:17.5px}
+@media (max-width:640px){.lex div{grid-template-columns:1fr;gap:4px}}
+
+/* tables */
+.tw{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:620px;font-size:16.5px}
+th,td{text-align:left;vertical-align:top;padding:13px 16px;border-bottom:1px solid var(--rule)}
+thead th{font-family:var(--ff-u);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;background:var(--panel)}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+tbody th{font-weight:400;white-space:normal;width:1%}
+table.recap tbody th{font-family:var(--ff-u);font-size:13.5px;font-weight:600;white-space:normal;width:150px}
+table.recap td{font-size:15.5px}
+table.boucles tbody th{font-family:var(--ff-u);font-size:13px;font-weight:600;white-space:normal;width:190px}
+table.boucles td{font-size:14.5px}
+.chip{font-family:var(--ff-u);font-size:13px;font-weight:600;padding:0;
+  display:inline-block;line-height:1.35;max-width:18ch}
+.chip.d{color:var(--dette)}
+
+/* blocks */
+.block{border-top:1px solid var(--rule);padding-top:26px;margin-bottom:64px;scroll-margin-top:24px}
+.block-h{display:flex;align-items:baseline;gap:16px;margin-bottom:12px}
+.bn{font-family:var(--ff-m);font-size:12px;font-weight:600;color:var(--accent);
+  border:1px solid var(--rule);padding:3px 8px;background:var(--surface);letter-spacing:.06em}
+.block h3{font-family:var(--ff-d);font-size:31px;font-weight:600;margin:0;letter-spacing:-.01em;line-height:1.2}
+.role{color:var(--ink-2)}
+.note{font-size:17.5px;color:var(--muted);border-left:2px solid var(--accent);
+  padding-left:16px;margin-top:18px}
+.note strong{color:var(--ink-2)}
+.sub{margin-top:30px}
+.sub h4{font-family:var(--ff-u);font-size:13px;font-weight:600;letter-spacing:.06em;margin:0 0 10px;
+  color:var(--ink-2);text-transform:uppercase}
+
+/* listings */
+.listing{font-family:var(--ff-m);font-size:14.2px;line-height:1.62;background:var(--panel);
+  border:1px solid var(--rule);border-left:2px solid var(--accent);
+  padding:18px 20px;overflow-x:auto;margin:18px 0 0;white-space:pre;tab-size:2;color:var(--ink)}
+.listing code{font-family:inherit}
+.listing .fn{color:var(--fn);font-weight:500}
+.listing .kw{color:var(--kw);font-weight:600}
+.listing .cm{color:var(--cm);font-style:italic}
+.listing .cm .fn,.listing .cm .kw{color:inherit;font-weight:inherit}
+.listing .gu{color:var(--str)}
+
+.inl{font-family:var(--ff-m);font-size:.9em;background:var(--panel);padding:1px 5px;border:1px solid var(--rule)}
+
+/* replis */
+.fold{margin:18px 0 0;border:1px solid var(--rule);background:var(--surface)}
+.fold > summary{cursor:pointer;list-style:none;padding:9px 14px;font-family:var(--ff-u);
+  font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:9px;user-select:none}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary::before{content:"+";font-family:var(--ff-m);font-size:14px;color:var(--accent);
+  width:14px;text-align:center}
+.fold[open] > summary::before{content:"–"}
+.fold > summary:hover{color:var(--accent)}
+.fold[open] > summary{border-bottom:1px solid var(--rule)}
+.fold .listing{margin:0;border:0;border-left:2px solid var(--accent)}
+
+/* plates */
+.plate{margin:20px 0 0;background:var(--slate);border:1px solid var(--slate-2);color:var(--chalk)}
+.plate figcaption{display:flex;align-items:baseline;gap:14px;padding:10px 16px;
+  border-bottom:1px solid var(--slate-2);font-family:var(--ff-u);font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase}
+.plate-n{color:var(--chalk-dim)}
+.plate-l{color:var(--chalk);letter-spacing:.06em;text-transform:none;font-size:12px}
+.plate-body{padding:26px 16px;overflow-x:auto;
+  background-image:radial-gradient(circle at 1px 1px,rgba(220,230,233,.055) 1px,transparent 0);
+  background-size:22px 22px}
+pre.mermaid{margin:0;text-align:center;min-height:40px;font-family:var(--ff-m);font-size:12px;color:var(--chalk-dim)}
+/* taille naturelle : jamais de reduction, defilement lateral si besoin */
+pre.mermaid svg{height:auto!important;max-width:none!important;display:block;margin:0 auto}
+
+/* open items */
+.opens{display:grid;gap:0;border-top:1px solid var(--rule)}
+.open-item{padding:16px 0;border-bottom:1px solid var(--rule)}
+.tag{font-family:var(--ff-u);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  padding:2px 7px;border:1px solid currentColor;vertical-align:2px;margin-left:9px;font-weight:600}
+.tag.ok{color:var(--quittance)}
+.tag.no{color:var(--muted)}
+.open-item h4{font-family:var(--ff-d);font-size:19px;font-weight:600;margin:0 0 6px}
+.open-item p{margin:0;font-size:17.5px;color:var(--ink-2)}
+.open-item em{color:var(--muted)}
+
+/* invariants */
+.inv{list-style:none;padding:0;margin:0;display:grid;gap:0;border-top:1px solid var(--rule)}
+.inv li{display:grid;grid-template-columns:48px 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--rule);
+  font-size:17.5px}
+.ik{font-family:var(--ff-m);font-size:12.5px;font-weight:600;color:var(--accent);padding-top:3px}
+
+footer{grid-column:1/-1;margin-top:30px;padding-top:24px;border-top:1px solid var(--rule);
+  font-family:var(--ff-u);font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px 22px}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow"><span>plan-suite</span><span>architecture de production du plan</span><span>133 fonctions unitaires</span></p>
+  <h1>Architecture <em>plan-suite</em></h1>
+  <p class="lede">Le système maintient un <strong>registre de travail</strong>. Tout point non résolu y est inscrit, et n'en est retiré qu'une fois résolu. Le plan n'est rédigé que lorsque le registre est vide.</p>
+</header>
+
+<aside class="rail">
+  <h2>Sommaire</h2>
+  <nav><a href="#principe">Principe de fonctionnement</a>
+<a href="#conception">Contraintes de conception</a>
+<a href="#overview">Vue d'ensemble</a>
+<a href="#lexique">Lexique</a>
+<a href="#types">Les cinq types d'entrée</a>
+<a href="#blocs-intro">Pseudo-code</a>
+<a href="#porte">00 · Entrée</a>
+<a href="#crible">01 · Le crible</a>
+<a href="#confronter">§ · confronter()</a>
+<a href="#niveau1">02 · Niveau 1</a>
+<a href="#niveau2">03 · Niveau 2</a>
+<a href="#vague">04 · L'itération</a>
+<a href="#apurement">05 · Résorption</a>
+<a href="#pointdevague">06 · Envoi des questions</a>
+<a href="#reecriture">07 · Réécriture</a>
+<a href="#miseenforme">08 · Mise en forme</a>
+<a href="#controle">09 · Contrôle</a>
+<a href="#boucles">Boucles et terminaison</a>
+<a href="#invariants">Invariants</a>
+<a href="#limites">Limites connues</a></nav>
+</aside>
+
+<main>
+
+<section id="principe">
+  <h2 class="sec">Principe de fonctionnement</h2>
+  <p>Le traitement alterne deux opérations : <b>alimenter</b> le registre, puis le <b>résorber</b>. Il itère jusqu'à ce qu'une itération n'ajoute plus rien et que le registre soit vide. Le plan est alors rédigé.</p>
+
+  <h3 class="sub-h">Alimentation — deux sources indépendantes</h3>
+  <ol class="steps">
+    <li><span><b>Lecture de la demande.</b> Une liste fixe de douze questions est posée au problème — du périmètre aux inconnues, en passant par les contraintes dures, les obligations formelles, l'énoncé lui-même et les exigences tacites ; elle est donnée en entier au bloc 01. Chaque question reçoit une réponse écrite, « sans objet » compris, et une question à laquelle la lecture ne sait pas répondre se clôt par une entrée au registre comme les autres. Ce que cette passe produit, ce sont des entrées au registre, et rien d'autre : aucun fragment de plan n'est écrit ici. Les moyens employés pour répondre relèvent de la configuration, pas de l'architecture.</span></li>
+    <li><span><b>Interrogation du chemin.</b> Un premier enchaînement d'étapes est écrit, puis chaque étape est interrogée sur trois points : ce sur quoi elle repose, ce qu'elle décide sans le déclarer, et le critère observable de sa réussite.</span></li>
+  </ol>
+  <p>Les deux sources ne captent pas les mêmes omissions. La lecture de la demande capte ce que l'énoncé ne dit pas ; l'interrogation du chemin capte ce que le chemin présuppose. Ni l'une ni l'autre ne peut atteindre le domaine de la seconde, et c'est la raison pour laquelle les deux sont exécutées.</p>
+
+  <h3 class="sub-h">Résorption — un traitement par type d'entrée</h3>
+  <p>Chaque entrée du registre relève de l'un de cinq types, et chaque type a un traitement unique : un fait manquant est établi ; un point de décision qui relève de l'utilisateur lui est soumis ; une décision litigieuse est instruite par mise en concurrence ; une étape trop large devient un sous-plan ; un cas qui ne peut se révéler qu'à l'exécution devient une branche, après contrôle.</p>
+  <p>Une entrée n'est retirée qu'une fois résolue. Aucun seuil, aucun compteur d'essais, aucune clôture par déclassement de priorité.</p>
+  <p>Les questions restantes sont soumises à l'utilisateur en un seul envoi. Les réponses closent les entrées correspondantes. Le chemin est ensuite réécrit à partir des décisions arrêtées, et non corrigé par retouches.</p>
+  <p>L'itération suivante interroge les étapes nouvelles, ce qui peut produire de nouvelles entrées. Le registre converge néanmoins : les faits établis ne sont pas réétablis, et une décision arrêtée n'est rouverte que si un fait nouveau contredit une hypothèse qu'elle avait explicitée.</p>
+</section>
+
+<section id="conception">
+  <h2 class="sec">Contraintes de conception</h2>
+  <p>Trois exigences s'opposent : garantir l'exhaustivité et pouvoir en rendre compte ; traiter un travail qui excède un seul contexte ; et rester proportionné sur une demande courte. Quatre décisions les rendent compatibles.</p>
+  <div class="decisions">
+    <div class="dec"><div><h3>La part invariable, c'est la liste de questions — pas son coût</h3>
+      <p>Une seule opération est exécutée quelle que soit la demande : le crible, c'est-à-dire la liste de questions posée une fois au problème. Tout le reste — confrontations, enquêtes, sous-plans, mise en forme — ne se déclenche que sur des entrées effectivement inscrites au registre. La quantité de travail est donc dictée par le <em>nombre d'entrées</em>, qui est un compte, et non par une estimation d'effort. Une demande qui ne produit que des réponses sans objet ne déclenche rien au-delà du crible.</p></div></div>
+    <div class="dec"><div><h3>Deux sources d'alimentation indépendantes</h3>
+      <p>L'implicite se loge à deux endroits distincts. Dans l'énoncé : le crible l'y cherche, et il ne regarde pas l'enchaînement. Dans l'enchaînement : l'interrogation des étapes l'y révèle, et elle ne regarde pas l'énoncé. Ce que l'une ne peut pas voir, l'autre le voit — c'est pourquoi les deux sont maintenues.</p></div></div>
+    <div class="dec"><div><h3>La taille se traite par récursion, non par régime particulier</h3>
+      <p>Le critère de découpe est observable : une étape dont le critère de réussite ne s'énonce pas en un seul observable devient un sous-plan. Le même traitement s'y applique, avec le même registre. Un travail volumineux ne modifie pas l'algorithme ; il en multiplie les exécutions.</p></div></div>
+    <div class="dec"><div><h3>L'état du traitement est externalisé dans un fichier</h3>
+      <p>Cette décision conditionne les trois autres. Un modèle de langage ne maintient pas un graphe mutable ni des compteurs : il les simule au lieu de les suivre. Ici, rien n'est à mémoriser — le registre se lit, s'incrémente et se solde. Et ce n'est pas un document supplémentaire : c'est le fichier de traçabilité qui doit de toute façon consigner ce qui a été décidé et vérifié, simplement tenu au fil de l'eau.</p></div></div>
+  </div>
+</section>
+
+<section id="overview">
+  <h2 class="sec">Vue d'ensemble</h2>
+  <p>Dix blocs numérotés, plus un sous-programme sans rang, <code class="inl">confronter()</code>, appelé depuis trois d'entre eux. Les blocs 04 à 07 sont regroupés en un seul nœud : ce sont les quatre temps d'une même itération. Ce schéma ne porte que les deux reprises qui traversent tout le parcours, et le refus à l'entrée ; les autres reprises sont locales à un bloc et figurent sur le schéma de ce bloc.</p>
+  <figure class="plate">
+    <figcaption><span class="plate-n">Schéma 00</span><span class="plate-l">Enchaînement général</span></figcaption>
+    <div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  P["00 · Entrée"]
+  C["01 · Crible"]
+  N1["02 · Niveau 1, lecture du besoin"]
+  N2["03 · Niveau 2, enchaînement"]
+  MO["04 à 07 · Itération"]
+  MF["08 · Mise en forme"]
+  CT["09 · Contrôle et émission"]
+  EM["Plan émis, registre clos"]
+  DE["Refus motivé, aucun plan produit"]
+  P --> C --> N1 --> N2 --> MO --> MF --> CT --> EM
+  P -. "Aucun plan" .-> DE
+  MO -. "Besoin contredit" .-> N1
+  CT -. "Défaut relevé" .-> MO
+  class DE dette
+  class EM quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div>
+  </figure>
+  <h3 class="sub-h" style="margin-top:36px">Entrées, fonction, sorties de chaque bloc</h3>
+  <div class="tw"><table class="recap">
+    <thead><tr><th>Bloc</th><th>Entrées</th><th>Fonction</th><th>Sorties</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">00 · Entrée</th>
+        <td>La demande, ou un plan existant — d'origine étrangère, ou issu du système avec son registre. La configuration des techniques autorisées.</td>
+        <td>Relever le cadre autorisé, les capacités disponibles, le destinataire du plan, la forme du travail et la nature du territoire. Décider s'il y a un problème de planification, ouvrir le registre de travail, puis évaluer ce que la tâche exige parmi les techniques autorisées.</td>
+        <td>Registre ouvert, cadre et capacités connus, acquis d'une passe antérieure repris. Ou refus motivé, sans plan.</td></tr>
+      <tr><th scope="row">01 · Crible</th>
+        <td>La demande, le cadre, les acquis repris.</td>
+        <td>Poser au problème une liste fixe de questions, avant qu'aucun enchaînement n'existe, et inscrire une réponse écrite à chacune.</td>
+        <td>Des entrées au registre, et une ligne unique groupant les réponses sans objet.</td></tr>
+      <tr><th scope="row">§ · confronter()</th>
+        <td>Une question, l'objet sur lequel elle porte, les faits établis, les critères d'acceptation ordonnés.</td>
+        <td>Produire des propositions par des méthodes imposées différentes, établir les faits dont elles dépendent, les attaquer isolément, marquer les hypothèses communes à toutes, faire trancher par un agent distinct.</td>
+        <td>Un verdict, et l'entrée close. Les pièces nommées par l'arbitre, chacune en entrée « décision ». Les options écartées conservées avec leur viabilité, et le fait qui ferait basculer, marqué. Ou, si aucune proposition ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">02 · Niveau 1</th>
+        <td>Le registre alimenté par le crible. Le plan étranger, s'il y en a un, comme proposition.</td>
+        <td>Mettre en concurrence les lectures du besoin, arrêter la cible en termes observables et les critères d'acceptation, contrôler que la cible garantit l'effet recherché.</td>
+        <td>Besoin arrêté, cible, critères ordonnés. Ou une exigence manquante renvoyée au crible. Ou, si aucune lecture ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">03 · Niveau 2</th>
+        <td>Besoin arrêté, faits établis, enchaînement d'une passe antérieure si le registre en porte un.</td>
+        <td>Mettre en concurrence les enchaînements qui relient l'état actuel à la cible, chacun découpant selon un principe différent. Ou conserver l'enchaînement antérieur, tant qu'aucun des trois constats de réouverture ne se lit au registre.</td>
+        <td>L'enchaînement retenu : la suite ordonnée d'étapes. Ou, si aucun ne tient, un point à soumettre à l'utilisateur.</td></tr>
+      <tr><th scope="row">04 · Itération</th>
+        <td>L'enchaînement courant, le registre.</td>
+        <td>Interroger chaque étape nouvelle sur trois points, et repasser le crible sur le couple besoin et enchaînement.</td>
+        <td>De nouvelles entrées au registre.</td></tr>
+      <tr><th scope="row">05 · Résorption</th>
+        <td>Les entrées ouvertes du registre.</td>
+        <td>Appliquer à chaque entrée le traitement unique de son type, sans qu'aucune puisse être retirée autrement.</td>
+        <td>Entrées closes, faits établis, décisions arrêtées, sous-plans, branches. Et les questions restées en attente.</td></tr>
+      <tr><th scope="row">06 · Envoi des questions</th>
+        <td>Les entrées « à soumettre » restées ouvertes.</td>
+        <td>Émettre en un seul envoi toutes les questions, attendre la réponse, la traiter selon sa nature.</td>
+        <td>Entrées closes par les réponses. Ou une entrée retypée en fait à établir. Ou une question reformulée dans le même échange, puis ramenée au besoin si elle ne tranche toujours pas. Ou le niveau 1 rouvert, si deux réponses se contredisent. Ou l'attente, si rien n'arrive.</td></tr>
+      <tr><th scope="row">07 · Réécriture</th>
+        <td>Les décisions arrêtées pendant l'itération.</td>
+        <td>Réécrire l'enchaînement depuis ces décisions, rattacher chaque étape à son origine, vérifier les quatre conditions de sortie.</td>
+        <td>Enchaînement réécrit et étapes neuves désignées. Ou sortie d'itération.</td></tr>
+      <tr><th scope="row">08 · Mise en forme</th>
+        <td>L'enchaînement stabilisé, le registre.</td>
+        <td>Repérer les points d'engagement, n'activer que sous cette condition l'appareil de risque, d'autorisation et de branche, contrôler la taille des étapes et élaguer.</td>
+        <td>Le plan mis en forme. Et, le cas échéant, de nouvelles entrées au registre.</td></tr>
+      <tr><th scope="row">09 · Contrôle</th>
+        <td>Le plan rédigé selon le modèle imposé, les critères d'acceptation, le besoin.</td>
+        <td>Soumettre le plan à deux relectures externes aux objets différents, trier leurs retours, router chaque défaut vers le bloc compétent.</td>
+        <td>Plan émis et registre clos. Ou des entrées renvoyées vers les blocs concernés.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="lexique">
+  <h2 class="sec">Lexique</h2>
+  <p>Un seul vocabulaire dans tout le document, pseudo-code compris. Les termes ci-dessous sont ceux qui seront retenus dans le skill.</p>
+  <div class="lex">
+    <div><b>registre de travail</b><p>Fichier unique où sont inscrits les points non résolus. Il tient également lieu de fichier de traçabilité.</p></div>
+    <div><b>entrée</b><p>Un point non résolu inscrit au registre, relevant d'un des cinq types.</p></div>
+    <div><b>clôture</b><p>La condition à laquelle une entrée est retirée. Trois états seulement : tranché, tranché avec compromis assumé, converti en branche. « En attente » et « non résolu » ne closent rien.</p></div>
+    <div><b>crible</b><p>La liste fixe de douze questions posée au problème. Passée une fois, elle ne produit que des entrées au registre.</p></div>
+    <div><b>enchaînement</b><p>La suite ordonnée d'étapes qui relie l'état actuel à la cible. C'est l'unique objet du niveau 2, et le découpage en est le grain.</p></div>
+    <div><b>itération</b><p>Un tour de traitement : interrogation des étapes nouvelles, repassage du crible, résorption, envoi des questions, réécriture de l'enchaînement.</p></div>
+    <div><b>envoi des questions</b><p>Le moment, unique dans une itération, où les questions accumulées au registre partent ensemble à l'utilisateur.</p></div>
+    <div><b>étape</b><p>L'unité de l'enchaînement. Elle a une origine écrite, un attendu observable unique, et c'est sur elle que portent les trois questions de l'itération.</p></div>
+    <div><b>pièce</b><p>Tout élément rattachable à une origine : une étape, une contrainte, un attendu, un fragment de décision. C'est l'unité que le rattachement à l'origine manipule, et celle qu'une réouverture vise.</p></div>
+    <div><b>point d'engagement</b><p>Une étape qui ferme une option ou consomme une ressource. C'est la seule chose qui rend atteignable l'appareil de risque et de retour arrière.</p></div>
+    <div><b>fait périssable</b><p>Fait dont la validité dépend de la date. Sa re-vérification est placée juste avant l'étape qui en dépend.</p></div>
+    <div><b>sous-plan</b><p>Étape trop large traitée à part, avec son périmètre, sa cible, ses critères locaux et les interfaces qu'elle garantit aux autres.</p></div>
+    <div><b>fait déterminant</b><p>Fait identifié comme pouvant renverser une décision, ou dont dépendent plusieurs étapes. Seul type de fait soumis à double établissement, par deux moyens de nature différente.</p></div>
+  </div>
+</section>
+
+<section id="types">
+  <h2 class="sec">Les cinq types d'entrée</h2>
+  <p>Toute entrée du registre relève d'un de ces types, et chaque type a un traitement unique.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Type</th><th>Origine</th><th>Traitement</th></tr></thead>
+    <tbody><tr><th scope="row"><span class="chip d">Fait manquant</span></th><td>Une étape reposant sur un fait non établi · une hypothèse non vérifiée · une question du crible</td><td>Les moyens disponibles sont essayés un par un, sans répétition. À épuisement, l'entrée devient un point à soumettre ou un cas d'exécution. Jamais un abandon.</td></tr>
+<tr><th scope="row"><span class="chip d">À soumettre</span></th><td>Une préférence non déductible · un arbitrage · une conséquence certaine à porter à la connaissance de l'utilisateur</td><td>Émis au prochain envoi de questions, groupé avec les autres. Le traitement attend la réponse.</td></tr>
+<tr><th scope="row"><span class="chip d">Décision</span></th><td>Une décision ouverte dans une étape · un objectif que nulle étape ne sert · un invariant franchi par l'enchaînement</td><td>Mise en concurrence puis arbitrage par un tiers. Les décisions mutuellement indépendantes sont traitées en aveugle mutuel.</td></tr>
+<tr><th scope="row"><span class="chip d">Sous-plan</span></th><td>Une étape dont le critère de réussite ne s'énonce pas en un seul observable</td><td>Traitée comme sous-plan, avec périmètre et critères propres. Le même traitement s'y applique, suivi d'une vérification des jonctions.</td></tr>
+<tr><th scope="row"><span class="chip d">Branche</span></th><td>Un fait qui ne peut être établi avant l'exécution, et qui a satisfait les cinq conditions de contrôle</td><td>Converti en branche à la mise en forme, avec son critère de déclenchement et son repli.</td></tr></tbody>
+  </table></div>
+</section>
+
+<section id="blocs-intro">
+  <h2 class="sec">Pseudo-code</h2>
+  <p>Dix blocs numérotés dans l'ordre d'exécution, plus un sous-programme. Les pseudo-codes sont repliés : cliquer pour les ouvrir. Les identifiants en capitales désignent les fonctions disponibles : 133 primitives fixées en amont, que l'architecture enchaîne sans en introduire de nouvelle. Les lignes précédées de <code class="inl">#</code> sont des commentaires. Ce pseudo-code est tenu à jour avec les schémas et le texte : les uns et les autres disent la même chose.</p>
+</section>
+
+<section class="block" id="porte">
+<header class="block-h"><span class="bn">00</span><h3>Entrée</h3></header>
+<p class="role">Ce bloc s'exécute une fois, avant tout le reste, et n'est jamais rejoué. Il fixe les conditions dans lesquelles tout le traitement va travailler : ce que la configuration autorise comme techniques, quels moyens d'enquête sont réellement disponibles, qui lira le plan — un exécutant humain, un agent, les deux — et sur quel terrain on opère. Il regarde ensuite ce qu'on lui donne : une demande seule, ou une demande accompagnée d'un plan, ce dernier cas se dédoublant selon que le plan vient d'une exécution antérieure du système ou d'ailleurs. Il ouvre enfin le fichier qui servira de registre pendant toute la durée du travail. Une seule chose peut l'arrêter : constater qu'aucun problème de planification n'est posé. C'est le seul arrêt que le système décide de lui-même.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 00</span><span class="plate-l">Voies d'entrée et ouverture du registre</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  R1["Lecture du cadre autorisé"]
+  R2["Inventaire des capacités disponibles"]
+  R3["Identification du destinataire du plan"]
+  R4["Forme du travail et nature du territoire"]
+  V{"Un plan existant est-il fourni ?"}
+  E1["Le besoin est à établir depuis la demande"]
+  W{"Vient-il du système lui-même ?"}
+  E2["Le besoin est dérivé du plan"]
+  G["Le plan concourt aux niveaux 1 et 2"]
+  E3["Son registre est repris"]
+  RF["Faits repris, péremption contrôlée"]
+  Q{"Un problème de planification est-il posé ?"}
+  DE["Refus motivé, le traitement s'arrête"]
+  OK["Ouverture du registre de travail"]
+  EX["Exigence de la tâche évaluée, cadre en garde"]
+  R1 --> R2 --> R3 --> R4 --> V
+  V -- "Non" --> E1 --> Q
+  V -- "Oui" --> W
+  W -- "Non" --> E2 --> G --> Q
+  W -- "Oui" --> E3 --> RF --> Q
+  Q -- "Non" --> DE
+  Q -- "Oui" --> OK --> EX
+  class DE dette
+  class EX quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>LIRE_TECHNIQUES_AUTORISEES                   # nombre et type d'agents par fonction :
+                                             # seule borne du système (principe 5)
+INVENTORIER_CAPACITES ; IDENTIFIER_DESTINATAIRE ; RECENSER_RESSOURCES_EXECUTION
+SI l'entrée est un plan existant :
+    AMORCER_DEPUIS_PLAN_EXISTANT             # le besoin est dérivé du plan
+    le plan source est conservé pour DEUX emplois et aucun autre :
+        concurrent anonymisé au niveau 1, concurrent anonymisé au niveau 2.
+        il n'est consulté nulle part ailleurs — ni déférence, ni rejet de principe.
+    SI un registre de passe antérieure existe :
+        REUTILISER_ACQUIS ; JUGER_PEREMPTION_FAIT sur chaque fait hérité
+SINON : SEPARER_DEMANDE_ET_BESOIN
+QUALIFIER_FORME_TRAVAIL ; QUALIFIER_TERRITOIRE
+SI aucun problème de planification n'est posé :
+    DECLINER_SI_PAS_DE_PLAN ; FIN            # unique arrêt de sa propre autorité
+PLACER_ET_NOMMER_LE_FICHIER(le plan, le registre)
+ouvrir le registre : REDIGER_TRACABILITE_SEPAREE
+    # ouverte ici, écrite en continu, close à l'émission.
+    # C'est à la fois la liste de travail et le livrable de traçabilité.
+EVALUER_EXIGENCE_TACHE                       # parmi les techniques autorisées
+RESPECTER_CADRE_AUTORISE                     # garde permanente : à chaque ouverture d'agent</code></pre></details>
+<p class="note">Un plan d'origine étrangère a exactement deux emplois : le besoin en est dérivé, et il concourt comme proposition aux niveaux 1 et 2. Il n'est consulté nulle part ailleurs.<br><br>Un plan issu d'une exécution antérieure du système arrive avec son <em>registre</em>, et c'est lui qui porte l'acquis : faits établis avec leur provenance, décisions closes, structure arrêtée. Rien de tout cela n'est refait ; seule la péremption des faits est contrôlée, et la structure n'est rejouée que si les éléments nouveaux l'exigent. Le plan et le registre sont deux entrées distinctes, et confondre les deux cas fait repayer ce qui était acquis.</p>
+</section>
+<section class="block" id="crible">
+<header class="block-h"><span class="bn">01</span><h3>Le crible — première source d'alimentation</h3></header>
+<p class="role">Le crible est une liste fixe de douze questions posées au problème lui-même, avant qu'aucun chemin n'ait été imaginé. C'est le premier des deux générateurs d'entrées, et la seule opération qui soit exécutée quelle que soit la demande. Chaque question reçoit une disposition écrite, et il n'y en a que trois possibles : la question désigne quelque chose, et cela devient une entrée au registre ; elle est sans objet dans cette demande, et elle rejoint la ligne unique qui groupe tous les sans-objet ; ou personne ne sait y répondre, et c'est un fait manquant, qui est une entrée comme une autre. Aucune question ne reste ouverte. Le crible n'écrit aucun fragment de plan : il lit, et il inscrit.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 01</span><span class="plate-l">Les questions du crible et leurs réponses</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  D["La demande seule. Aucun chemin n'a encore été imaginé"]
+  Q1["Qu'est-ce qui est dans le périmètre, qu'en est exclu, et d'où part-on ?"]
+  Q2["Quels objectifs, dans quel ordre, et lesquels s'opposent entre eux ?"]
+  Q3["Que faut-il tenir sans jamais le relâcher, du début à la fin ?"]
+  Q4["Quelles préférences sont exprimées, à ne pas confondre avec des contraintes ?"]
+  Q5["Quelles obligations formelles s'imposent, et de quoi dépend-on sans le maîtriser ?"]
+  Q6["Qu'a-t-on déjà établi ou déjà fait, qui éviterait de le refaire ?"]
+  Q7["L'énoncé du problème tient-il, et une solution y est-elle déjà glissée ?"]
+  Q8["Qu'a-t-on ajouté que personne n'a demandé, et quelles hypothèses viennent du dehors ?"]
+  Q9["Qui d'autre subira certainement l'effet du plan, et le demandeur le sait-il ?"]
+  Q10["Quelles exigences vont tellement de soi qu'elles ne sont jamais dites ?"]
+  Q11["Qu'est-ce qui est écarté du plan, et qu'il faut noter sans le traiter ?"]
+  Q12["Qu'est-ce qu'on ignore encore, à l'échelle du problème entier ?"]
+  A["Chaque question reçoit une disposition écrite"]
+  W{"La question a-t-elle un objet dans cette demande ?"}
+  V["Sans objet. Groupées toutes ensemble en une seule ligne"]
+  X{"La lecture sait-elle y répondre ?"}
+  E["La réponse désigne quelque chose : entrée au registre"]
+  I["Personne ne sait répondre : entrée « Fait manquant »"]
+  D --> Q1 --> Q2 --> Q3 --> Q4 --> Q5 --> Q6 --> Q7 --> Q8
+  Q8 --> Q9 --> Q10 --> Q11 --> Q12 --> A
+  A --> W
+  W -- "Non" --> V
+  W -- "Oui" --> X
+  X -- "Oui" --> E
+  X -- "Non" --> I
+  class E dette
+  class I dette
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code># INVARIANT : aucune fonction du crible n'ouvre d'agent, ne produit de texte
+# livrable, ni ne déclenche de confrontation. Le crible lit et inscrit.
+# Chaque ligne se clôt par une disposition écrite : un objet, ou « vide ».
+# Une ligne à laquelle la lecture ne sait pas répondre se clôt elle aussi par
+# un objet — une entrée FAIT MANQUANT. « Sans réponse » n'est pas une disposition,
+# et aucune ligne du crible ne reste ouverte.
+# Les « vides » sont groupés en une seule ligne du registre — c'est le prix entier
+# du crible sur une demande de deux lignes.
+
+DELIMITER_PERIMETRE ; ETABLIR_ETAT_ACTUEL
+ORDONNER_OBJECTIFS_SANS_ECARTER ; DETECTER_CONFLIT_OBJECTIFS   # symptôme, pas arbitrage
+RECENSER_CONTRAINTES_DURES ; RECENSER_INVARIANTS
+RECENSER_PREFERENCES                          # tenues séparées des contraintes
+RECENSER_OBLIGATIONS_FORMELLES ; RECENSER_DEPENDANCES_EXTERNES
+CHERCHER_ANTECEDENTS → REUTILISER_ACQUIS      # ne pas redémontrer l'acquis valide
+CONTESTER_ENONCE_PROBLEME ; DETECTER_SOLUTION_IMPOSEE
+TRAQUER_AJOUTS_SILENCIEUX ; DEBUSQUER_HYPOTHESES_IMPORTEES
+EXPOSER_EXTERNALITES_CERTAINES                # → entrée À SOUMETTRE : le demandeur doit
+                                              #   avoir compris, pas seulement être averti
+BALAYER_EXIGENCES_TACITES                     # sur le problème nu
+ISOLER_LE_HORS_PLAN                           # noté sans être sur le chemin
+RECENSER_INCONNUES                            # premier jet, à l'échelle du problème
+
+chaque trouvaille → une entrée, typée. Rien d'autre n'est produit ici.</code></pre></details>
+<p class="note">Ce que l'architecture fixe ici, c'est <em>que</em> ces questions sont posées, toutes, et que chacune reçoit une réponse écrite. Elle ne fixe pas <em>comment</em> on y répond : inspection directe, recherche, agents en parallèle, mise en concurrence sur une question difficile — ce sont des techniques, et c'est la configuration qui dit lesquelles sont autorisées. Le crible ne produit qu'une chose : des entrées au registre. Il n'écrit aucun fragment de plan.</p>
+</section>
+<section class="block" id="confronter">
+<header class="block-h"><span class="bn">§</span><h3>confronter() — sous-programme de mise en concurrence</h3></header>
+<p class="role">Ce bloc n'a pas de rang dans le parcours : c'est un sous-programme, appelé depuis trois endroits — le niveau 1 sur le problème posé, le niveau 2 sur l'enchaînement, et la résorption sur chaque décision litigieuse. Trois objets, trois classes d'erreur distinctes. Son déroulement est toujours le même. Plusieurs propositions sont produites, chacune par une méthode imposée et différente, sans qu'aucune ne voie les autres. Chacune écrit la liste des hypothèses qu'elle fait, et les faits dont elle dépend sont établis avant toute suite. Chaque proposition est alors attaquée seule, sur son action et sur les faits, jamais sur les arguments de son auteur. Les hypothèses que toutes partagent sont marquées. Enfin un agent qui n'a produit aucune proposition tranche, sur les critères d'acceptation et le besoin. Lorsqu'une seule proposition est matériellement distincte, l'appel n'est pas sauté : cette proposition unique est attaquée.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma §</span><span class="plate-l">Déroulement d'une confrontation</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  Q["La question mise en concurrence"]
+  G["Une méthode imposée à chaque concurrent"]
+  P["Propositions produites en isolement"]
+  H["Chacune écrit les hypothèses qu'elle fait"]
+  HY{"Une hypothèse est-elle une inconnue ?"}
+  AT["Le fait est établi avant toute attaque"]
+  IND{"L'indépendance obtenue est-elle suffisante ?"}
+  ANG{"Reste-t-il un angle non employé ?"}
+  REP["Un concurrent reproduit avec cet angle"]
+  FAIB["Indépendance faible consignée au registre"]
+  O["Chaque proposition est attaquée séparément"]
+  T["Hypothèses communes marquées par intersection"]
+  AR["Arbitrage par un agent distinct"]
+  Z{"L'arbitre retient-il une proposition ?"}
+  V["Verdict rendu, entrée close"]
+  QU["Aucune ne tient : passe à l'utilisateur"]
+  Q --> G --> P --> H --> HY
+  HY -- "Oui" --> AT --> IND
+  HY -- "Non" --> IND
+  IND -- "Non" --> ANG
+  ANG -- "Oui" --> REP --> H
+  ANG -- "Non" --> FAIB --> O
+  IND -- "Oui" --> O
+  O --> T --> AR --> Z
+  Z -- "Oui" --> V
+  Z -- "Non" --> QU
+  class QU dette
+  class V quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code># Appelé à trois niveaux, sur trois objets qui attrapent trois erreurs
+# différentes. Jamais sauté : quand le champ n'a qu'un membre, le niveau
+# s'exécute comme ATTAQUER_TOUT_LE_CHAMP sur ce champ d'un seul.
+
+ISOLER_LES_EVALUATIONS                        # rien ne circule entre propositions
+propositions = PRODUIRE_OPTIONS_DISTINCTES(question)
+    GARANTIR_DIVERSITE_METHODE est obtenu par GÉNÉRATEUR ASSIGNÉ, jamais déclaré :
+      chaque concurrent reçoit un générateur nommé et différent —
+        en remontant de la cible | en descendant de l'état actuel |
+        tiré de CHERCHER_ANTECEDENTS | le plan source anonymisé |
+        contraint par la ressource la plus rare | optimisé sur la dimension
+        que le crible a déclarée « vide »        ← attaque adverse du crible,
+                                                   à coût nul, dans une
+                                                   confrontation qui existe déjà
+    CHERCHER_APPROCHES_NON_ENVISAGEES
+POUR chaque proposition :
+    SI le cadre autorise un contexte séparé :
+        DECIDER_D_OUVRIR_UN_AGENT ; RESPECTER_CADRE_AUTORISE
+        REDIGER_BRIEF_AGENT(périmètre, faits établis avec provenance, question,
+                            format ; rien qui oriente) ; BORNER_UN_AGENT
+        INTEGRER_RETOUR_AGENT ; REFUSER_AUTO_CONFIRMATION
+    EXIGER_HYPOTHESES_EXPLICITES              # la liste écrite des hypothèses de
+                                              # cette proposition est l'INDEX de
+                                              # réouverture (cf. boucle 3)
+    DEBUSQUER_HYPOTHESES_IMPORTEES
+    toute hypothèse qui est une inconnue non levée → entrée FAIT MANQUANT,
+        et la proposition attend la clôture de cette entrée AVANT d'être
+        attaquée. Attaquer une proposition dont le socle n'est pas établi ne
+        rend qu'un résultat conditionnel — « elle tombe si l'hypothèse est
+        fausse » — c'est-à-dire rien. La confrontation entière attend, puisque
+        toutes les propositions sont attaquées avant tout arbitrage.
+CHOISIR_ANGLES_ATTAQUE
+POUR chaque proposition : ATTAQUER_UNE_OPTION(action + faits seuls ; jamais le plaidoyer)
+    # l'ordre n'est pas fixé : toutes sont attaquées avant tout arbitrage
+ATTAQUER_TOUT_LE_CHAMP                        # un marquage, non une seconde épreuve
+    hypothèses communes = intersection des listes écrites par
+        EXIGER_HYPOTHESES_EXPLICITES sur chaque proposition
+    # chacune a déjà été éprouvée par l'attaque individuelle. Le marquage ne
+    # dit pas si elle tient, il dit ce que sa chute emporterait :
+    #     propre à une proposition → cette proposition seule tombe
+    #     commune à toutes         → le champ entier tombe
+    et les conditions d'un problème mal posé
+QUALIFIER_INDEPENDANCE_OBTENUE ; DETECTER_ERREURS_CORRELEES
+SI l'indépendance obtenue est faible :
+    S'IL reste un angle de CHOISIR_ANGLES_ATTAQUE qu'aucun n'a porté :
+        un concurrent est REPRODUIT avec ce biais explicitement assigné
+        # terminaison : l'ensemble des angles est fini et décroît strictement
+    SINON : l'indépendance obtenue est consignée telle quelle et la
+        confrontation se poursuit. Rien à demander à l'utilisateur ; une
+        faiblesse de méthode consignée n'est pas un point ouvert du plan.
+
+verdict = ARBITRER_A_L_AVEUGLE
+    rendu par un contexte ouvert pour cela :
+      REDIGER_BRIEF_AGENT(arbitre) ← DEFINIR_CRITERES_ACCEPTATION ordonnés
+                                     + le besoin
+                                     + les propositions anonymisées
+                                     + les attaques subies
+                                     − jamais la provenance, jamais les plaidoyers
+      et une consigne de plus : NOMMER toute pièce d'une proposition battue que
+      la retenue ne porte pas et qu'aucune attaque n'a tuée
+    précédence = critères d'acceptation ordonnés, puis RECENSER_CONTRAINTES_DURES.
+    JAMAIS le nombre de voix.
+    BORNER_UN_AGENT ; INTEGRER_RETOUR_AGENT ; REFUSER_AUTO_CONFIRMATION
+
+SI l'arbitre ne retient aucune proposition — champ entier tombé, ou aucune
+   qui satisfasse les critères d'acceptation :
+    CONSTATER_IMPOSSIBILITE ; PRESENTER_ALTERNATIVES_AU_CHOIX
+    → entrée À SOUMETTRE (arbitrage). Jamais un arrêt.
+    # c'est l'arbitre qui le constate, jamais le planificateur seul
+
+CONSIGNER_CE_QUI_A_TRANCHE ; QUALIFIER_PORTEE_DECISION
+NOMMER_FAIT_QUI_FERAIT_BASCULER               # marque le fait comme déterminant
+CONSERVER_OPTIONS_ECARTEES                    # avec leur viabilité : c'est le dauphin
+chaque pièce nommée par l'arbitre → entrée DÉCISION (greffer ou non), jamais un import muet
+toute pièce du verdict qu'aucune proposition ne portait :
+    RATTACHER_TOUTE_PIECE_A_SON_ORIGINE
+QUALIFIER_ETAT_RESOLUTION(verdict)            # clôture
+RETOURNER verdict</code></pre></details>
+<p class="note"><strong>Le socle est établi avant l'attaque.</strong> Quand une proposition repose sur une hypothèse qui est une inconnue non levée, le fait est établi d'abord. Attaquer une proposition dont le socle n'est pas établi ne rendrait qu'un résultat conditionnel — elle tombe si l'hypothèse est fausse — c'est-à-dire rien. La confrontation entière attend, puisque toutes les propositions sont attaquées avant tout arbitrage.<br><br><strong>L'isolement</strong> est la seule chose que l'architecture impose sur les attaques : une proposition est attaquée sur son action et sur les faits, sans les arguments de son auteur, et sans voir le sort des autres. L'ordre dans lequel les propositions sont attaquées n'est pas fixé — il ne change rien, puisque toutes le sont avant tout arbitrage.<br><br><strong>Le repérage des hypothèses communes</strong> ne remet rien à l'épreuve : les attaques individuelles ont déjà éprouvé chaque hypothèse de chaque proposition. Il s'agit seulement de marquer, par intersection des listes, celles que toutes les propositions partagent — parce que la conséquence de leur chute n'est pas la même. Une hypothèse propre à une proposition qui tombe élimine cette proposition ; une hypothèse commune qui tombe fait tomber le champ entier, et ce cas ne se résout pas par arbitrage : il remonte à l'utilisateur. Sans ce marquage, la portée d'une attaque réussie n'est pas connue.<br><br><strong>L'arbitre</strong> est un agent distinct de ceux qui ont produit les propositions. Il reçoit les critères d'acceptation ordonnés et le besoin ; il ne reçoit ni l'origine des propositions, ni les arguments de leurs auteurs. C'est lui, et non le planificateur, qui constate le cas où aucune proposition ne tient — le planificateur ne peut pas se prononcer seul sur ce point.<br><br><strong>Quand l'indépendance reste faible</strong> alors que tous les angles d'attaque disponibles ont été employés, le traitement ne s'arrête pas et n'interroge pas l'utilisateur : il n'y a rien à lui demander. L'indépendance obtenue est consignée au registre telle qu'elle est, et la confrontation se poursuit. Une faiblesse de méthode consignée n'est pas un point ouvert du plan.</p>
+</section>
+<section class="block" id="niveau1">
+<header class="block-h"><span class="bn">02</span><h3>Niveau 1 — la lecture du besoin</h3></header>
+<p class="role">Ce niveau répond à une seule question : quel problème planifie-t-on. Plusieurs lectures du besoin sont mises en concurrence et l'une est retenue. La cible est alors énoncée en termes observables — ce qu'on veut obtenir, formulé de telle façon qu'on puisse constater si on l'a obtenu — et les critères d'acceptation sont établis et ordonnés. Ces critères ne servent pas qu'ici : c'est avec eux que l'on tranchera à tous les niveaux suivants, jusqu'à la relecture finale. Un contrôle ferme le niveau, et il pose une question précise : la cible peut-elle être atteinte sans que l'effet recherché soit produit ? Tant que la réponse est oui, la cible est incomplète.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 02</span><span class="plate-l">Lecture du besoin et contrôle de fidélité</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  A["Le registre, alimenté par le crible"]
+  RB{"Un besoin arrêté est-il au registre ?"}
+  CF{"La demande le contredit-elle ?"}
+  KB["Besoin conservé, cible et critères repris"]
+  B["Plusieurs lectures du besoin proposées"]
+  C{"L'arbitre retient-il une lecture ?"}
+  QU["Aucune ne tient : passe à l'utilisateur"]
+  D["Cible énoncée en termes observables"]
+  E["Critères d'acceptation, ordonnés"]
+  F{"La cible garantit-elle l'effet voulu ?"}
+  G["Une exigence manquait : elle entre au crible"]
+  H["Le besoin est arrêté"]
+  A --> RB
+  RB -- "Non" --> B
+  RB -- "Oui" --> CF
+  CF -- "Non" --> KB --> H
+  CF -- "Oui" --> B
+  B --> C
+  C -- "Non" --> QU
+  C -- "Oui" --> D --> E --> F
+  F -- "Non" --> G --> A
+  F -- "Oui" --> H
+  class G dette
+  class QU dette
+  class KB quit
+  class H quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>SI un besoin arrêté lors d'une passe antérieure est au registre :
+    REPRENDRE_PASSE_PRECEDENTE ; le confronter à la demande telle qu'elle
+    arrive — éventuellement reprécisée au moment où le système est relancé
+    SI rien dans cette demande ne le contredit :
+        REUTILISER_ACQUIS : besoin, cible et critères sont conservés.
+        Ce niveau n'est pas rejoué.
+    SINON : la contradiction entre au crible, et les lectures sont remises
+        en concurrence ci-dessous.
+
+confronter(« quelle lecture du besoin ? », crible)
+FORMULER_CIBLE_OBSERVABLE ; DEFINIR_CRITERES_ACCEPTATION
+VERIFIER_FIDELITE_CIBLE_BESOIN
+    SI la cible est satisfaisable sans produire l'effet voulu :
+        l'écart nomme un critère manquant ou une contrainte dure non recensée ;
+        cette pièce entre au crible, la cible est reformulée.
+        # l'ensemble des critères ne fait que croître : l'espace des cibles
+        # admissibles ne fait que se restreindre. Ni plafond, ni cycle.
+CHAINER_ETAT_ACTUEL_VERS_CIBLE                # dans les deux sens</code></pre></details>
+<p class="note">Les critères d'acceptation ne sont pas déduits de la cible : ce sont deux choses différentes, établies ensemble. La cible dit ce qu'on veut obtenir ; les critères disent à quoi une proposition sera jugée acceptable, et dans quel ordre de priorité. Ils serviront à l'arbitrage de tous les niveaux suivants.<br><br><strong>Sur une reprise</strong>, un besoin arrêté lors d'une passe antérieure est au registre. Il est confronté à la demande telle qu'elle arrive — éventuellement reprécisée par l'utilisateur au moment où il relance le système. Si rien dans cette demande ne le contredit, le besoin est conservé avec sa cible et ses critères, et ce niveau n'est pas rejoué. S'il y a contradiction, les lectures du besoin sont remises en concurrence.<br><br>Le contrôle qui suit demande si la cible peut être atteinte sans que l'effet recherché soit produit. Si c'est le cas, l'écart désigne une exigence qui manquait : elle entre au crible et la cible est reformulée. Chaque passage ajoute une exigence et n'en retire aucune, donc l'ensemble des cibles admissibles se restreint strictement.</p>
+</section>
+<section class="block" id="niveau2">
+<header class="block-h"><span class="bn">03</span><h3>Niveau 2 — l'enchaînement</h3></header>
+<p class="role">Ce niveau a un seul objet : la suite ordonnée d'étapes qui relie l'état actuel à la cible. Le découpage n'est pas traité à part — c'est le grain de cet enchaînement, et en faire un objet séparé coûterait une confrontation entière sur une demande qui n'a qu'une seule façon d'être découpée. Plusieurs enchaînements sont mis en concurrence, chacun construit selon un principe de découpe différent, puis attaqués et arbitrés comme au niveau 1. Sur une reprise, l'enchaînement arrêté lors d'une passe antérieure est conservé tant qu'aucun des trois constats de réouverture ne se lit au registre.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 03</span><span class="plate-l">Enchaînements concurrents et arbitrage</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  A["Besoin arrêté, faits déjà établis"]
+  R{"Un enchaînement arrêté est-il au registre ?"}
+  N{"Cible, critères ou hypothèse contredite ?"}
+  K["Enchaînement conservé, contrôlé à la fin"]
+  B["Enchaînements concurrents proposés"]
+  C["Chacun découpe selon un principe différent"]
+  E["Attaques, puis arbitrage"]
+  Z{"L'arbitre retient-il un enchaînement ?"}
+  QU["Aucun ne tient : passe à l'utilisateur"]
+  F["Enchaînement retenu"]
+  A --> R
+  R -- "Non" --> B
+  R -- "Oui" --> N
+  N -- "Non" --> K --> F
+  N -- "Oui" --> B
+  B --> C --> E --> Z
+  Z -- "Non" --> QU
+  Z -- "Oui" --> F
+  class QU dette
+  class F quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code># Un seul objet de niveau 2 : la suite ordonnée d'étapes qui relie l'état
+# actuel à la cible. Le découpage n'est PAS un objet séparé — c'est le grain
+# de l'enchaînement. Les concurrents diffèrent par principe de partition
+# (par objectif | par système touché | par domaine d'inconnue | par
+# irréversibilité) : sur un travail massif ils divergent réellement, sur
+# une demande de deux lignes ils convergent et le niveau coûte une attaque.
+
+SI un enchaînement arrêté lors d'une passe antérieure est au registre :
+    REPRENDRE_PASSE_PRECEDENTE
+    il n'est rejoué que si l'un de ces trois constats se lit au registre.
+    Aucune appréciation n'entre ici :
+        la cible a changé
+        les critères d'acceptation ont changé
+        un fait établi depuis contredit une hypothèse que ce enchaînement a
+            nommée — même index de réouverture que la boucle 3
+    SI aucun des trois ne se lit :
+        REUTILISER_ACQUIS : l'enchaînement est conservé tel quel et passe par
+        le contrôle final comme à chaque fois. Ce niveau n'est pas rejoué.
+    SINON : il concourt comme proposition ci-dessous.
+
+enchaînement = confronter(« quel chemin de l'état actuel à la cible ? », crible + faits)</code></pre></details>
+<p class="note">Les propositions concurrentes découpent selon des principes différents : par objectif, par système touché, par domaine d'inconnue, par irréversibilité. Sur un travail volumineux elles divergent réellement ; sur une demande courte elles convergent, et le niveau se réduit à une attaque.<br><br><strong>Sur une reprise</strong>, l'enchaînement arrêté lors d'une passe antérieure est au registre. Il est conservé par défaut, et ce niveau n'est rejoué que si l'un de trois constats se lit au registre : la cible a changé, les critères d'acceptation ont changé, ou un fait établi depuis contredit une hypothèse que cet enchaînement avait nommée. Aucune appréciation n'entre ici — le troisième constat se lit sur le même index que la boucle 3, la liste écrite des hypothèses. Si aucun des trois ne se lit, rien n'est refait : l'enchaînement conservé passe par le contrôle final, comme à chaque fois.</p>
+</section>
+<section class="block" id="vague">
+<header class="block-h"><span class="bn">04</span><h3>L'itération — seconde source d'alimentation</h3></header>
+<p class="role">C'est le moteur : le traitement tourne ici jusqu'à ce que plus rien ne reste ouvert. Une itération commence par deux opérations qui alimentent le registre et ne se voient pas l'une l'autre. D'un côté, chaque étape née de la version courante de l'enchaînement est interrogée sur trois points : ce sur quoi elle repose, ce qu'elle décide sans le déclarer, et le critère observable de sa réussite. De l'autre, le crible est repassé une fois — non plus sur le problème seul, mais sur le couple que forment le besoin et l'enchaînement. Viennent ensuite la résorption des entrées, l'envoi des questions à l'utilisateur, la réécriture de l'enchaînement, et le contrôle des quatre conditions de sortie. S'il en manque une, un tour de plus.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 04</span><span class="plate-l">L'itération entière, dont ce bloc est le premier temps</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  IT["Début d'itération"]
+  A["Les étapes nouvelles de l'enchaînement"]
+  B["Trois questions posées à chaque étape"]
+  CD["Crible repassé sur besoin et enchaînement"]
+  D["Entrées inscrites au registre"]
+  AP["Résorption, un traitement par type"]
+  PV["Envoi unique à l'utilisateur"]
+  RE["Réécriture depuis les décisions arrêtées"]
+  S{"Les quatre conditions sont-elles réunies ?"}
+  MF["Passage à la mise en forme"]
+  IT --> A --> B --> D
+  IT --> CD --> D
+  D --> AP --> PV --> RE --> S
+  S -- "Non" --> IT
+  S -- "Oui" --> MF
+  class D dette
+  class MF quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>RÉPÉTER :
+
+  ── GÉNÉRATEUR n°2 : interrogation des étapes neuves ───────────────────────
+  etapes_neuves = les étapes que RATTACHER_TOUTE_PIECE_A_SON_ORIGINE désigne
+              comme nées de la version courante (première itération : toutes)
+  POUR chaque étape neuve, trois questions :
+    (a) sur quoi repose-t-il ?
+        RECENSER_INCONNUES(étape) ; EXIGER_HYPOTHESES_EXPLICITES(étape)
+        DEBUSQUER_HYPOTHESES_IMPORTEES(étape)          → entrées FAIT MANQUANT
+    (b) choisit-il quelque chose ?
+        ORIENTER_CHOIX(étape) :
+            il manque un fait        → entrée FAIT MANQUANT
+            il faut une préférence   → entrée À SOUMETTRE
+            vrai choix à instruire   → entrée DÉCISION
+        DISTINGUER_CHOIX_ET_CONSEQUENCE
+        DISTINGUER_ETAPE_ESSENTIELLE_ET_MECANIQUE
+            si mécanique : CHERCHER_ALTERNATIVE_A_UN_PAS_DIT_MECANIQUE
+                           avant de l'écarter
+    (c) qu'est-ce qui dira qu'il a réussi ?
+        DEFINIR_ATTENDU_OBSERVABLE(étape)
+            innommable sans en savoir plus        → ce n'est pas une étape,
+                                                     c'est une entrée FAIT MANQUANT
+            nommable seulement en plusieurs observables indépendants
+                                                  → entrée SOUS-PLAN
+        CONTROLER_TAILLE_DES_ETAPES(étape)
+
+  ── SECOND PASSAGE DU CRIBLE : une fois par itération, sur le COUPLE besoin×enchaînement ─
+  BALAYER_EXIGENCES_TACITES :
+      POUR chaque dimension (sécurité, montée en charge, maintenabilité,
+      coût, accessibilité, et celles que le territoire impose) l'itération se
+      clôt par UNE disposition nommée, jamais par un « rien à signaler » global :
+          servie par l'étape N | déclarée hors-plan (ISOLER_LE_HORS_PLAN)
+          | entrée À SOUMETTRE
+  TRAQUER_AJOUTS_SILENCIEUX(enchaînement)          # étapes que personne n'a demandées
+  VERIFIER_COUVERTURE_OBJECTIFS                 # objectif servi par aucune étape → entrée DÉCISION
+  VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN(enchaînement) # invariant franchi → entrée DÉCISION
+  EVALUER_EXIGENCE_TACHE                        # rappelée ici : le nombre d'entrées
+      # et leur nature sont maintenant observables. Elle ne peut qu'AJOUTER une
+      # technique autorisée, jamais en retirer une d'un objet qui existe.
+      # Monotone : elle ne peut donc pas boucler.</code></pre></details>
+<p class="note">Le crible capte ce que l'énoncé ne dit pas, sans regarder l'enchaînement ; l'interrogation capte ce que l'enchaînement présuppose, sans regarder l'énoncé. Ce que l'une ne peut pas voir, l'autre le voit : c'est la raison pour laquelle les deux sont exécutées.</p>
+</section>
+<section class="block" id="apurement">
+<header class="block-h"><span class="bn">05</span><h3>Résorption du registre</h3></header>
+<p class="role">C'est ici que les entrées du registre sont fermées. Chaque entrée relève d'un des cinq types, et chaque type a un traitement unique qui ne se confond avec aucun autre : un fait manquant est établi, un point qui relève de l'utilisateur est réservé pour l'envoi groupé, une décision litigieuse est mise en concurrence, une étape trop large devient un sous-plan, un cas qui ne peut se révéler qu'à l'exécution devient une branche après contrôle. Une entrée ne sort du registre que par le traitement de son type ; aucune n'en sort parce qu'elle a été jugée secondaire. Les sections ci-dessous détaillent chacun de ces traitements.</p>
+<p class="note"><strong>Le troisième niveau de confrontation</strong> se trouve ici. Les niveaux 1 et 2 portent sur le besoin et sur l'enchaînement ; celui-ci porte sur chaque décision litigieuse prise isolément. C'est le même sous-programme, appelé sur un troisième objet.<br><br><strong>Quand la partition elle-même est en cause.</strong> Une jonction qui ne tient pas est normalement traitée en figeant l'interface litigieuse et en rejouant les deux sous-plans concernés. Si l'incohérence révèle que le découpage était mauvais, figer ne corrige rien : le redécoupage est alors autorisé, mais à une condition — qu'un fait nouveau, absent du registre des faits, le justifie. C'est la règle qui gouverne déjà la réouverture de toute décision close, et elle préserve la garantie d'arrêt puisque le registre des faits ne fait que croître. Sans fait nouveau, le point remonte à l'utilisateur.</p>
+<div class="sub"><h4>Entrée « Fait manquant »</h4>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ENTRÉE « FAIT MANQUANT »
+    CLASSER_INCONNUE_CONSTRUCTION_OU_EXECUTION ; QUALIFIER_PORTEE_INCONNUE
+    DISTINGUER_INDETERMINE_ET_NON_CHERCHE
+    ORDONNER_INCONNUES_SANS_ECARTER             # ordonne, n'abandonne rien
+    AVANCER_L_HYPOTHESE_LA_PLUS_FRAGILE         # départage les ex æquo
+    SI la portée déborde le périmètre courant (sous-plan) : escalade au parent,
+       jamais tranchée localement
+    « construction » → lever(inconnue)
+    « exécution »    → CONTRÔLE DU CLASSEMENT ci-dessous, avant toute clôture</code></pre></details>
+</div>
+<div class="sub"><h4>Établir un fait</h4>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 05a</span><span class="plate-l">Établissement d'un fait manquant</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  I["Un fait manque"]
+  PAR{"Plusieurs domaines séparables ?"}
+  AG["Un agent par domaine, en parallèle"]
+  CR["Retours croisés les uns avec les autres"]
+  MOY["Essayer un moyen non encore utilisé"]
+  M["Inspection, source, action, question"]
+  AB{"Le moyen a-t-il abouti ?"}
+  F["Fait établi, provenance consignée"]
+  E{"Indéterminable, ou simplement non cherché ?"}
+  QQ["Non cherché : le point passe à l'utilisateur"]
+  CE["Indéterminable : contrôle du classement"]
+  I --> PAR
+  PAR -- "Oui" --> AG --> CR --> MOY
+  PAR -- "Non" --> MOY
+  MOY --> M --> AB
+  AB -- "Oui" --> F
+  AB -- "Non" --> MOY
+  MOY -- "Moyens épuisés" --> E
+  E -- "Non cherché" --> QQ
+  E -- "Indéterminable" --> CE
+  class QQ dette
+  class F quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  lever(inconnue) :
+    SI plusieurs domaines d'enquête séparables ET le cadre autorise les agents :
+        PARALLELISER_ENQUETE ; un agent par domaine
+        DECIDER_D_OUVRIR_UN_AGENT ; REDIGER_BRIEF_AGENT(les faits établis y voyagent,
+            pour que personne ne refasse le travail) ; BORNER_UN_AGENT
+        à chaque retour : INTEGRER_RETOUR_AGENT ; REFUSER_AUTO_CONFIRMATION
+        AVANT d'intégrer, croiser les retours ENTRE EUX :
+            DETECTER_CONTRADICTION_ENTRE_SOURCES ; DETECTER_ORIGINE_COMMUNE_SOURCES
+            DETECTER_ERREURS_CORRELEES
+        ARRETER_ORCHESTRATION                   # un agent de plus ne changerait rien
+    TANT QUE non levée ET il reste un moyen non essayé :
+        CHOISIR_MOYEN_DE_LEVEE(parmi les moyens NON ENCORE ESSAYÉS)
+            inspection, calcul, mesure  → MENER_VERIFICATION
+            source, précédent           → CHERCHER_ANTECEDENTS
+            action bornée et réversible → LEVER_INCONNUE_PAR_ACTION_REVERSIBLE
+                GARDE (principe 2) : interdite si l'action coïncide avec un
+                engagement du plan. Si le seul moyen de lever est de FAIRE
+                l'étape, l'inconnue n'est pas levable ici : elle passe la contrôle du classement.
+            question                    → entrée À SOUMETTRE
+    # terminaison : l'ensemble des moyens est fini et décroît strictement.
+    SI épuisé : DISTINGUER_INDETERMINE_ET_NON_CHERCHE
+        vraiment indéterminable → CONTRÔLE DU CLASSEMENT
+        sinon                   → entrée À SOUMETTRE (jamais une livraison avec un trou)
+    régime des faits, une fois par fait obtenu :
+        CONSIGNER_PROVENANCE_FAIT ; SEPARER_OBSERVE_ET_SUPPOSE ; ENONCER_LIMITES_FAIT
+        RENDRE_INCERTITUDE_VISIBLE
+        JUGER_PEREMPTION_FAIT → périssable : INSCRIRE_REVERIFICATION_FAIT_PERISSABLE
+        plusieurs sources : DETECTER_CONTRADICTION_ENTRE_SOURCES →
+            DETECTER_ORIGINE_COMMUNE_SOURCES → RESOUDRE_CONTRADICTION
+            (date, version, périmètre, définition — sinon entrée DÉCISION « contesté »)
+        sources convergentes : DETECTER_ERREURS_CORRELEES ; QUALIFIER_INDEPENDANCE_OBTENUE
+        SI le fait est DÉTERMINANT (nommé par NOMMER_FAIT_QUI_FERAIT_BASCULER,
+           ou plus d'une étape en dépend) :
+            seconde levée par un moyen d'une AUTRE nature, ISOLER_LES_EVALUATIONS ;
+            puis DETECTER_ERREURS_CORRELEES ; QUALIFIER_INDEPENDANCE_OBTENUE
+        SI le fait contredit une hypothèse NOMMÉE par une pièce déjà close :
+            cette pièce seule est rouverte, le fait inscrit à côté d'elle ;
+            REUTILISER_ACQUIS sur tout le reste
+            # l'index de réouverture est la liste d'hypothèses écrite par
+            # EXIGER_HYPOTHESES_EXPLICITES : elle se lit, elle ne se calcule pas</code></pre></details>
+</div>
+<div class="sub"><h4>Contrôler un report à l'exécution</h4>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 05b</span><span class="plate-l">Les cinq conditions du report</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  S["Un fait est classé « à établir plus tard »"]
+  G1{"Est-il indéterminable maintenant ?"}
+  G2{"Tous les moyens sont-ils épuisés ?"}
+  G3{"Sait-on à quoi on le verra, le moment venu ?"}
+  G4{"Sa portée dépasse-t-elle une étape ?"}
+  G5{"Est-il appuyé autrement que par affirmation ?"}
+  C["Le classement devient lui-même une décision"]
+  R["Classement refusé : le fait doit être établi"]
+  Q["Classement accepté : branche du plan"]
+  S --> G1
+  G1 -- "Non" --> R
+  G1 -- "Oui" --> G2
+  G2 -- "Non" --> R
+  G2 -- "Oui" --> G3
+  G3 -- "Non" --> R
+  G3 -- "Oui" --> G4
+  G4 -- "Oui" --> C --> G5
+  G4 -- "Non" --> G5
+  G5 -- "Non" --> R
+  G5 -- "Oui" --> Q
+  class R dette
+  class Q quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  CONTRÔLE DU CLASSEMENT d'un classement « exécution »  (principe 14 — contrôlée par le
+  système, jamais déléguée à l'utilisateur, jamais décidée en silence) :
+    (1) DISTINGUER_INDETERMINE_ET_NON_CHERCHE rend « indéterminable maintenant »
+    (2) CHOISIR_MOYEN_DE_LEVEE sur l'ensemble des moyens qu'INVENTORIER_CAPACITES
+        rend disponibles retourne l'ensemble VIDE
+    (3) DEFINIR_ATTENDU_OBSERVABLE sur le SIGNAL qui la révélera à l'exécution :
+        s'il n'est pas nommable, le classement est faux → retour en « construction »
+    (4) SI QUALIFIER_PORTEE_INCONNUE dit qu'elle peut changer plus d'une étape :
+        le classement LUI-MÊME devient une entrée DÉCISION, confrontée et arbitrée
+    (5) REFUSER_AUTO_CONFIRMATION : le classement ne vaut pas parce que le
+        système l'affirme
+    les cinq conditions satisfaites → clôture « branchée », entrée BRANCHE
+    # C'est ici que le principe 7 est gardé : sans contrôle du classement, un plan se
+    # remplit de branches qui sont des reports déguisés.</code></pre></details>
+</div>
+<div class="sub"><h4>Entrée « À soumettre »</h4>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ENTRÉE « À SOUMETTRE »
+    DECIDER_D_INTERROGER_UTILISATEUR            # moins cher de vérifier soi-même ?
+        si oui → l'entrée se retype en entrée FAIT MANQUANT, levée à l'résorption.
+        La question est un dernier recours.
+    FORMULER_QUESTION_ACTIONNABLE ; QUALIFIER_PORTEE_DECISION
+    PRESENTER_ALTERNATIVES_AU_CHOIX si le point se ramène à deux options
+    l'entrée reste ouverte jusqu'à l'ENVOI DES QUESTIONS</code></pre></details>
+</div>
+<div class="sub"><h4>Entrée « Décision »</h4>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ENTRÉE « DÉCISION »
+    ETABLIR_DEPENDANCES_ENTRE_DECISIONS         # ordre de tranchage
+    les choix MUTUELLEMENT INDÉPENDANTS sont confrontés en aveugle mutuel
+        (aucun ne voit la résolution de l'autre) ; les dépendants, en ordre
+    POUR chacun : confronter(le choix, faits + enchaînement)      ← NIVEAU 3 — la décision, troisième niveau de confrontation
+        verdict nommant un fait absent du registre des faits → entrée FAIT MANQUANT
+            # terminaison : le fait doit être NOUVEAU, vérifiable par lecture
+            # du registre, et le registre des faits ne fait que croître
+        verdict « tranché avec compromis » → entrée À SOUMETTRE (arbitrage) :
+            l'utilisateur voit le compromis matériel AVANT que le plan ne le referme</code></pre></details>
+</div>
+<div class="sub"><h4>Entrée « Sous-plan »</h4>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 05c</span><span class="plate-l">Sous-plan : descente, renégociation, recomposition</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  P["Étape sans critère de réussite unique"]
+  C["Sous-plan : périmètre, cible, critères"]
+  C2["Interfaces promises, termes figés"]
+  H["Même traitement, même registre"]
+  KO{"Le sous-plan est-il exécutable tel quel ?"}
+  KO2{"Le terme en cause est-il déjà figé ?"}
+  RN["Le parent fige le terme en cause"]
+  ESU["Le point passe à l'utilisateur"]
+  RC["Recomposition, jonctions vérifiées"]
+  IN{"Les jonctions tiennent-elles ?"}
+  PART{"La partition elle-même est-elle en cause ?"}
+  NF{"Un fait nouveau le justifie-t-il ?"}
+  RD["Redécoupage, retour au niveau 2"]
+  TF["L'interface devient un terme figé"]
+  FIN["Le sous-plan remonte au parent"]
+  P --> C --> C2 --> H --> KO
+  KO -- "Non" --> KO2
+  KO2 -- "Non" --> RN --> H
+  KO2 -- "Oui" --> ESU
+  KO -- "Oui" --> RC --> IN
+  IN -- "Non" --> PART
+  IN -- "Oui" --> FIN
+  PART -- "Non" --> TF --> H
+  PART -- "Oui" --> NF
+  NF -- "Oui" --> RD
+  NF -- "Non" --> ESU
+  class ESU dette
+  class FIN quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ENTRÉE « SOUS-PLAN »
+    DECOUPER_EN_SOUS_PLANS_ET_FUSIONNER(étape)
+    sous-plan = { périmètre (contenu STRICTEMENT dans le parent) ;
+                faits d'entrée = socle + faits du parent, avec provenance ;
+                FORMULER_CIBLE_OBSERVABLE locale + DEFINIR_CRITERES_ACCEPTATION locaux ;
+                contraintes dures et invariants hérités ;
+                interfaces promises aux autres sous-plans ;
+                termes figés }
+    traiter(sous_plan) : le MÊME moteur, mêmes itérations, MÊME registre
+        (les entrées du sous-plan sont marquées de son nom — c'est pourquoi un
+         sous-plan n'a pas de file de réserve : ses questions sont drainées au
+         prochain envoi des questions comme les autres)
+        interdit dans un sous-plan : SEPARER_DEMANDE_ET_BESOIN,
+            AMORCER_DEPUIS_PLAN_EXISTANT, CONTESTER_ENONCE_PROBLEME,
+            DETECTER_SOLUTION_IMPOSEE, DECLINER_SI_PAS_DE_PLAN,
+            LIRE_TECHNIQUES_AUTORISEES, INVENTORIER_CAPACITES,
+            IDENTIFIER_DESTINATAIRE, RECENSER_RESSOURCES_EXECUTION
+            # un enfant qui reconteste le besoin ou recalcule le cadre ne peut
+            # que diverger. Tout le reste lui est ouvert, EXPOSER_EXTERNALITES_
+            # CERTAINES et BALAYER_EXIGENCES_TACITES compris : il les inscrit,
+            # il ne les tranche pas.
+        SI le sous-plan ne peut être honoré tel qu'il est écrit :
+            CONSTATER_IMPOSSIBILITE(local) ; remonter le TERME à modifier et le
+            fait qui l'impose → le parent FIGE ce terme et rejoue ce seul enfant
+            SI traiter exigerait de RELÂCHER un terme déjà figé, une contrainte
+            dure ou un objectif : ce n'est plus une renégociation, c'est une
+            escalade → entrée À SOUMETTRE à la racine
+    recomposer :
+        ORDONNER_PAR_PREREQUIS à travers les frontières
+        IDENTIFIER_ETAPES_SIMULTANEES → VERIFIER_SIMULTANEITE_POSSIBLE
+            (deux sous-plans « parallèles » qui se disputent un approbateur ne le sont pas)
+        VERIFIER_COHERENCE_ENSEMBLE ; VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN
+        incohérence → elle nomme deux sous-plans et l'interface qui les sépare :
+            cette interface devient un TERME FIGÉ chez les deux,
+            REUTILISER_ACQUIS, et ces deux sous-plans seuls sont rejoués</code></pre></details>
+</div>
+<div class="sub"><h4>Entrée « Branche »</h4>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ENTRÉE « BRANCHE »
+    reste ouverte jusqu'à la mise en forme, où CONSTRUIRE_BRANCHE_CONDITIONNELLE
+    l'écrit : critère de déclenchement = l'observable nommé en contrôle du classement (3),
+    plus son repli.</code></pre></details>
+</div>
+</section>
+<section class="block" id="pointdevague">
+<header class="block-h"><span class="bn">06</span><h3>Envoi des questions à l'utilisateur</h3></header>
+<p class="role">C'est le moment, unique dans une itération, où le système s'adresse à l'utilisateur. Les questions ne partent pas au fil de l'eau : elles s'accumulent au registre pendant tout le travail et sont émises ensemble, lorsque plus rien ne peut avancer sans réponse. L'utilisateur est ainsi interrompu une fois par itération et non une fois par question, et il voit d'un coup tout ce qui dépend de lui. Le bloc couvre aussi le traitement de ce qui revient : selon que la réponse tranche, ne tranche pas, contredit une réponse antérieure ou n'arrive pas, la suite n'est pas la même.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 06</span><span class="plate-l">Échange avec l'utilisateur</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  A["Plus rien n'avance sans l'utilisateur"]
+  B{"Des questions sont-elles en attente ?"}
+  Z["L'itération se poursuit sans envoi"]
+  C["Envoi unique de toutes les questions"]
+  D["Attente, aucune valeur par défaut"]
+  C1{"Une réponse est-elle arrivée ?"}
+  R1["Le traitement reste en attente"]
+  C2{"La réponse tranche-t-elle la question ?"}
+  C3{"Contredit-elle une réponse antérieure ?"}
+  R3["Le niveau 1 est rouvert sur ce point"]
+  R4["Les entrées concernées sont closes"]
+  K{"Un moyen disponible permet-il de l'établir ?"}
+  FM["L'entrée devient un fait à établir"]
+  REF{"L'entrée a-t-elle déjà été reformulée ?"}
+  R2["Reformulée avec l'enjeu, même échange"]
+  BE["Questions ramenées au besoin lui-même"]
+  A --> B
+  B -- "Non" --> Z
+  B -- "Oui" --> C --> D --> C1
+  C1 -- "Non" --> R1
+  C1 -- "Oui" --> C2
+  C2 -- "Oui" --> C3
+  C3 -- "Oui" --> R3
+  C3 -- "Non" --> R4
+  C2 -- "Non" --> K
+  K -- "Oui" --> FM
+  K -- "Non" --> REF
+  REF -- "Non" --> R2 --> D
+  REF -- "Oui" --> BE
+  class FM dette
+  class R4 quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ── ENVOI DES QUESTIONS — l'unique rendez-vous avec l'utilisateur ────────────
+  atteint quand TOUTE entrée qui pouvait avancer sans l'utilisateur a avancé.
+  # état vérifiable par lecture du registre, pas une appréciation d'opportunité
+  SI des entrées À SOUMETTRE sont ouvertes :
+      un seul envoi, groupé : toutes les questions, tous les arbitrages,
+      toutes les externalités certaines
+      SUSPENDRE_ENQUETE_ET_DEMANDER ; ATTENDRE   # aucune valeur par défaut
+      à la réponse :
+        pas de réponse            → on attend. Rien ne repart.
+        question restée sans réponse alors que d'autres en ont reçu une
+                                  → traitée comme une réponse qui ne tranche
+            pas. Une réponse partielle n'est pas une absence de réponse :
+            ce qui est répondu clôt les entrées correspondantes, et chaque
+            question laissée de côté suit la règle ci-dessous.
+        réponse qui ne tranche pas → DECIDER_D_INTERROGER_UTILISATEUR d'abord :
+            SI CHOISIR_MOYEN_DE_LEVEE rend un moyen encore disponible :
+                l'entrée se retype en entrée FAIT MANQUANT et n'est pas reposée ;
+                elle est levée à l'résorption de l'itération suivante, comme
+                toute entrée de ce type — l'utilisateur n'attend pas pour elle
+            SINON SI l'entrée ne porte pas déjà la marque « reformulée » :
+                FORMULER_QUESTION_ACTIONNABLE à nouveau, avec
+                PRESENTER_ALTERNATIVES_AU_CHOIX et QUALIFIER_PORTEE_DECISION
+                (ce qui change selon la réponse), dans le MÊME échange :
+                l'utilisateur est là, il n'attend pas l'itération suivante.
+                La marque « reformulée » est inscrite sur l'entrée
+                # une propriété de l'entrée, lue au registre. Pas un compteur.
+            SINON : la question porte au-delà de ce que l'utilisateur peut
+                savoir. On change d'objet : FORMULER_QUESTION_ACTIONNABLE sur
+                le BESOIN — ce qu'il cherche à obtenir, et non la manière d'y
+                parvenir. Les réponses alimentent le NIVEAU 1.
+                Jamais une troisième formulation de la même question.
+        réponse contredisant une réponse antérieure → le besoin est mal cerné :
+            la contradiction devient une pièce du crible et rouvre le NIVEAU 1
+            sur ce seul point, porteuse des deux réponses ; REUTILISER_ACQUIS
+        sinon : chaque entrée reçoit sa clôture</code></pre></details>
+<p class="note"><strong>Absence de réponse</strong> : le traitement attend, rien ne reprend.<br><br><strong>Réponse partielle</strong> — certaines questions reçoivent une réponse, d'autres non. Ce n'est pas une absence de réponse : ce qui est répondu clôt les entrées correspondantes, et chaque question laissée de côté est traitée comme une réponse qui ne tranche pas, ci-dessous.<br><br><strong>Réponse qui ne tranche pas</strong> — « je ne sais pas », ou une réponse inexploitable. Première chose vérifiée : un moyen disponible permet-il d'établir le point sans l'utilisateur ? Si oui, l'entrée change de type et devient un fait à établir — elle ne lui est pas reposée, et elle sera levée à la résorption de l'itération suivante, comme toute entrée de ce type. Sinon, la question est reformulée avec l'énoncé de ce qui change selon la réponse, et elle repart <em>dans le même échange</em> : l'utilisateur est là, on ne le fait pas attendre l'itération suivante.<br><br><strong>Une entrée déjà reformulée qui reçoit une seconde réponse qui ne tranche pas</strong> ne l'est pas une troisième fois. Cet état est écrit au registre : ce n'est pas un compteur d'essais, c'est une propriété de l'entrée. Il signifie que la question porte au-delà de ce que l'utilisateur peut savoir, et la réponse n'est pas d'insister : on change d'objet et on l'interroge sur son besoin — ce qu'il cherche à obtenir plutôt que la manière d'y parvenir. Les réponses obtenues alimentent le niveau 1.<br><br><strong>Réponses contradictoires</strong> : le besoin est mal cerné, et le niveau 1 est rouvert sur ce seul point.</p>
+</section>
+<section class="block" id="reecriture">
+<header class="block-h"><span class="bn">07</span><h3>Réécriture et condition de sortie</h3></header>
+<p class="role">L'enchaînement n'est pas retouché : il est réécrit à partir des décisions arrêtées pendant l'itération, puis réordonné par prérequis. La différence n'est pas une question de méthode mais de résultat — une retouche laisse en place ce que personne n'a décidé, une réécriture ne produit que ce qui découle d'une décision, d'un fait, d'une réponse de l'utilisateur ou d'une contrainte héritée. Chaque étape est ensuite rattachée à son origine, ce qui sert deux fins d'un seul geste : retirer celles qui n'en ont pas, et désigner les étapes neuves que l'itération suivante devra interroger. Le bloc se termine par les quatre conditions de sortie, toutes vérifiables par lecture du registre.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 07</span><span class="plate-l">Réécriture et conditions de sortie</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  D["Décisions arrêtées pendant l'itération"]
+  CH{"Une décision close change-t-elle le chemin ?"}
+  KP["Enchaînement conservé, aucune étape neuve"]
+  A["Actions dérivées de ces décisions"]
+  O["Ordonnancement par prérequis"]
+  RO["Chaque étape rattachée à son origine"]
+  X["Étape sans origine : retirée"]
+  N["Les étapes neuves sont désignées"]
+  S1{"Aucune étape non interrogée ?"}
+  S2{"Aucune entrée non close ?"}
+  S3{"Aucune dimension du crible sans disposition ?"}
+  S4{"Aucun non-appel sans sa condition ?"}
+  RE["Une itération de plus"]
+  FIN["Sortie d'itération"]
+  D --> CH
+  CH -- "Non" --> KP --> S1
+  CH -- "Oui" --> A --> O --> RO
+  RO --> X
+  RO --> N --> S1
+  S1 -- "Non" --> RE
+  S1 -- "Oui" --> S2
+  S2 -- "Non" --> RE
+  S2 -- "Oui" --> S3
+  S3 -- "Non" --> RE
+  S3 -- "Oui" --> S4
+  S4 -- "Non" --> RE
+  S4 -- "Oui" --> FIN
+  class X dette
+  class FIN quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>  ── RÉÉCRITURE — jamais un rapiéçage ───────────────────────────────────
+  SI une décision close change l'enchaînement :
+      enchaînement = DERIVER_ACTIONS_DEPUIS_DECISIONS(décisions closes)
+      ORDONNER_PAR_PREREQUIS ; AVANCER_L_HYPOTHESE_LA_PLUS_FRAGILE (départage
+          entre deux ordres également valides)
+      RATTACHER_TOUTE_PIECE_A_SON_ORIGINE
+          toute étape dont l'origine n'est ni une décision close, ni un fait, ni une
+          réponse de l'utilisateur, ni une contrainte héritée est RETIRÉE — jamais gardé
+          par prudence ; et l'origine désigne les étapes neuves de l'itération suivante
+  SINON : l'enchaînement est conservé tel quel et l'itération suivante n'a aucun
+      étape neuve à interroger. Seules les entrées encore ouvertes l'occupent.
+
+  ── SORTIE D'ITÉRATION — état vérifiable par lecture du registre ─────────
+  SORTIR quand, toutes les quatre étant vraies :
+      aucune étape de l'enchaînement non interrogée dans sa version courante ;
+      aucune entrée sans clôture ;
+      aucune dimension du second passage du crible sans disposition nommée ;
+      aucun non-appel conditionnel sans sa condition écrite.</code></pre></details>
+<p class="note">Le rattachement de chaque étape à son origine sert deux fins : retirer ce qui n'en a pas, et désigner les étapes neuves que l'itération suivante interrogera. La sortie est alors soumise à quatre conditions simultanées, toutes vérifiables par lecture du registre.</p>
+</section>
+<section class="block" id="miseenforme">
+<header class="block-h"><span class="bn">08</span><h3>Mise en forme</h3></header>
+<p class="role">Ce n'est pas une phase distincte mais une itération de plus : ce que ce bloc relève produit des entrées ordinaires, et le traitement reprend. Il repère d'abord les points d'engagement, c'est-à-dire les étapes qui ferment une option ou consomment une ressource. Cette liste, et elle seule, rend atteignable l'appareil de risque : réversibilité, retour arrière éprouvé, signaux d'échec, points de contrôle, risque résiduel statué. S'y ajoutent, sous d'autres conditions écrites, les points d'autorisation, les jalons de constat, les propositions de moyens d'exécution, les branches et la vérification des simultanéités. En l'absence de ces conditions, cet appareil n'est pas allégé : il est hors d'atteinte.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 08</span><span class="plate-l">Ce qui n'est atteignable que sous condition</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  P["Repérage des points d'engagement"]
+  Z{"Y a-t-il un point d'engagement ?"}
+  N["Aucun appareil de risque n'est atteignable"]
+  R1["Réversibilité et retour arrière éprouvés"]
+  R2["Signaux d'échec, points de contrôle"]
+  R3["Risques par origine, résidu statué"]
+  O{"Obligation formelle ou point irréversible ?"}
+  AU["Points d'autorisation, autorité désignée"]
+  J{"Un suiveur humain distinct de l'exécutant ?"}
+  JA["Jalons de constat placés"]
+  RS{"Des ressources d'exécution recensées ?"}
+  PR["Affectation, chiffrage et marges proposés"]
+  B["Branches écrites, faits périssables datés"]
+  SI["Étapes simultanées repérées et vérifiées"]
+  T["Taille des étapes, élagage du superflu"]
+  P --> Z
+  Z -- "Non" --> N --> O
+  Z -- "Oui" --> R1 --> R2 --> R3 --> O
+  O -- "Oui" --> AU --> J
+  O -- "Non" --> J
+  J -- "Oui" --> JA --> RS
+  J -- "Non" --> RS
+  RS -- "Oui" --> PR --> B
+  RS -- "Non" --> B
+  B --> SI --> T
+  class T quit
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code># Ses trouvailles sont des entrées ordinaires : si elle en produit, le moteur
+# reprend. Ce n'est pas une phase, c'est une itération de plus.
+
+REPERER_POINTS_ENGAGEMENT                     # ferme une option, consomme une ressource
+SUR CES POINTS SEULEMENT — appareil mineur, inatteignable autrement :
+    QUALIFIER_REVERSIBILITE ; DEFINIR_RETOUR_ARRIERE ; EPROUVER_RETOUR_ARRIERE
+        (un retour arrière vérifié, pas affirmé — ou le constat qu'il n'existe pas)
+    DEFINIR_SIGNAUX_ECHEC ; PLACER_POINTS_VERIFICATION
+        (là où l'erreur se propagerait avant que l'attendu de l'étape ne la révèle)
+    RECENSER_RISQUES_PAR_ORIGINE ; QUALIFIER_VRAISEMBLANCE_RISQUE ; QUALIFIER_RAYON_IMPACT
+    SI un acteur touché peut s'adapter : ANTICIPER_TIERS_REACTIF
+    STATUER_SUR_RISQUE_RESIDUEL
+        tout résidu « accepté » ou « délégué » → entrée À SOUMETTRE
+SI RECENSER_OBLIGATIONS_FORMELLES non vide OU un point d'engagement est irréversible :
+    PLACER_POINTS_AUTORISATION ; DESIGNER_AUTORITE_AUTORISATION (jamais l'exécutant)
+    VERIFIER_COUVERTURE_BLOQUANTS             # toute partie capable de bloquer
+                                              # reçoit un point de passage
+SI IDENTIFIER_DESTINATAIRE rend un suiveur humain distinct de l'exécutant :
+    PLACER_JALONS_CONSTAT                     # distincts des autorisations
+SI RECENSER_RESSOURCES_EXECUTION rend personnes, délais ou budget :
+    offre groupée à l'envoi des questions : PROPOSER_AFFECTATION ; PROPOSER_CHIFFRAGE ;
+    PROPOSER_MARGES                           # jamais produites d'office
+POUR chaque entrée BRANCHE : CONSTRUIRE_BRANCHE_CONDITIONNELLE
+POUR chaque fait périssable : la re-vérification est placée juste avant l'étape qui en dépend
+IDENTIFIER_ETAPES_SIMULTANEES → VERIFIER_SIMULTANEITE_POSSIBLE
+CONTROLER_TAILLE_DES_ETAPES(plan) ; ELAGUER_ETAPES_INUTILES</code></pre></details>
+<p class="note">L'appareil de risque, de retour arrière et d'autorisation n'est atteignable que par un point d'engagement effectif ou une obligation formelle recensée. En leur absence, il n'est pas allégé : il est hors d'atteinte. C'est la structure qui l'empêche d'occuper le centre du plan, non une consigne de modération.</p>
+</section>
+<section class="block" id="controle">
+<header class="block-h"><span class="bn">09</span><h3>Contrôle et émission</h3></header>
+<p class="role">Le plan est rédigé selon le modèle imposé, puis soumis à deux relectures externes aux objets délibérément différents. La première reçoit le plan, les critères d'acceptation et le besoin : elle juge si le plan fait ce qu'il devait faire. La seconde reçoit le plan seul, confié à un lecteur qui n'a rien vu du travail, et à qui l'on demande non pas de l'exécuter mais de dire où il devrait redemander une information. Ce que ces relectures relèvent n'ouvre aucune procédure particulière : chaque défaut redevient une entrée du type que sa nature désigne, et repart vers le bloc qui traite ce type. Quand plus rien n'est ouvert, le plan est émis et le registre clos.</p>
+<figure class="plate"><figcaption><span class="plate-n">Schéma 09</span><span class="plate-l">Relectures externes et routage des défauts</span></figcaption><div class="plate-body"><pre class="mermaid">%%{init: {"theme":"base","themeVariables":{"background":"transparent","primaryColor":"#25333B","primaryTextColor":"#DCE6E9","primaryBorderColor":"#6E8C99","lineColor":"#93AEBA","secondaryColor":"#2E404A","tertiaryColor":"#1C282E","tertiaryTextColor":"#DCE6E9","secondaryTextColor":"#DCE6E9","noteBkgColor":"#2E404A","noteTextColor":"#DCE6E9","edgeLabelBackground":"#162126","fontFamily":"IBM Plex Mono, ui-monospace, monospace","fontSize":"16px"},"flowchart":{"nodeSpacing":48,"rankSpacing":64,"padding":16,"useMaxWidth":false,"wrappingWidth":520,"htmlLabels":true,"diagramPadding":14}} }%%
+flowchart TD
+  VE["Couverture, cohérence, invariants, adossement"]
+  FA{"L'exécutant juge-t-il le plan faisable ?"}
+  OP{"Reste-t-il une option écartée conservée ?"}
+  RP["Option suivante reprise, faisabilité rejouée"]
+  QU["Champ épuisé : le point passe à l'utilisateur"]
+  PL["Plan rédigé selon le modèle fourni"]
+  T1["Relecture 1 : plan, critères et besoin"]
+  T2["Relecture 2 : le plan seul, lecteur à froid"]
+  U1{"La relecture 1 relève-t-elle un défaut ?"}
+  TR{"Le retour vise-t-il une décision manquante ?"}
+  DT["Nouvelle entrée au registre"]
+  RF["Refus écrit et motivé"]
+  Z{"Des entrées ont-elles été ouvertes ?"}
+  RO["Chacune repart vers le bloc compétent"]
+  EM["Plan émis, registre clos"]
+  VE --> FA
+  FA -- "Non" --> OP
+  OP -- "Oui" --> RP --> FA
+  OP -- "Non" --> QU
+  FA -- "Oui" --> PL
+  PL --> T1 --> U1
+  PL --> T2 --> TR
+  U1 -- "Oui" --> DT
+  U1 -- "Non" --> Z
+  TR -- "Oui" --> DT
+  TR -- "Non" --> RF --> Z
+  DT --> Z
+  Z -- "Oui" --> RO
+  Z -- "Non" --> EM
+  class DT dette
+  class QU dette
+  class EM quit
+  classDef dette fill:#42272A,stroke:#B4695C,color:#EBC9C0;
+  classDef quit fill:#22382F,stroke:#5E9B84,color:#C3DED2;</pre></div></figure>
+<details class="fold"><summary>Pseudo-code</summary><pre class="listing"><code>VERIFIER_COUVERTURE_OBJECTIFS ; VERIFIER_COHERENCE_ENSEMBLE
+VERIFIER_INVARIANTS_SUR_TOUT_CHEMIN (branches comprises)
+VERIFIER_ADOSSEMENT_AFFIRMATIONS (y compris les affirmations apparues tard)
+VERIFIER_FAISABILITE_PAR_EXECUTANT
+    SI échec : repli sur le dauphin — CONSERVER_OPTIONS_ECARTEES rend l'option
+    suivante, on rejoue CETTE SEULE vérification, pas le choix entier
+REFUSER_AUTO_CONFIRMATION
+
+REDIGER_PLAN(selon le TEMPLATE fourni au système)
+    # l'architecture ne définit pas ce format et n'en porte aucune trace :
+    # seul le contenu grossit avec la complexité (principe 10)
+ELAGUER_LA_PROSE
+    # critère : retirer tout ce qu'une instance de l'exécutant, contexte vierge,
+    # lira ou vérifiera de toute façon. Le comment n'est dirigé que là où il
+    # n'est pas évident. Aucune justification, aucun archivisme.
+RENDRE_ACTIONNABLE_PAR_AGENT
+SIGNALER_LES_LIMITES                          # GARDE : ne porte que des exclusions
+    # DÉLIBÉRÉES, chacune tracée à une décision close ou à DELIMITER_PERIMETRE.
+    # Un point non résolu n'y entre jamais : il retourne en entrée.
+ISOLER_LE_HORS_PLAN ; PREVOIR_SUITE_EN_CAS_DE_SUCCES
+CONTROLER_CONTENU_FINAL                       # attendus falsifiables, aucune préférence
+                                              # promue en contrainte, aucune étape sans
+                                              # origine, rien d'incertain donné pour acquis
+CONTROLER_INTEGRITE_DOCUMENT
+
+— deux épreuves externes, aux objets et aux briefs DIFFÉRENTS —
+FAIRE_CONTROLER_PAR_UN_TIERS(le plan + les critères + le besoin ;
+                             jamais le registre, jamais le raisonnement)
+EPROUVER_AUTONOMIE_DU_TEXTE(le plan SEUL, à un lecteur qui n'a rien vu :
+                            « où devrais-tu redemander quelque chose ? »
+                            — pas « exécute-le »)
+    TRI DES RETOURS, obligatoire (sans lui, cette épreuve gonfle le plan) :
+      le lecteur réclame ce que le plan aurait dû décider   → entrée
+      le lecteur réclame ce qu'il lira ou vérifiera lui-même → refus écrit,
+          avec sa raison : c'est ELAGUER_LA_PROSE qui a raison, pas lui
+INTEGRER_RETOUR_AGENT ; REFUSER_AUTO_CONFIRMATION
+DETECTER_ERREURS_CORRELEES ; QUALIFIER_INDEPENDANCE_OBTENUE
+    # les deux briefs diffèrent matériellement : c'est le seul chemin de preuve
+    # réellement distinct que je sache construire
+
+ROUTEUR DES DÉFAUTS — tout finding devient une entrée du type que sa nature désigne :
+    prémisse fausse         → pièce du crible, NIVEAU 1 rejoué sur ce seul point
+    fait douteux            → entrée FAIT MANQUANT
+    décision mal fondée     → entrée DÉCISION
+    étape trop large        → entrée SOUS-PLAN
+    défaut de rédaction     → corrigé ici
+  Il s'y ferme par la règle de son type. Pas de boucle spéciale, pas de compteur.
+
+REDIGER_TRACABILITE_SEPAREE(clôture du registre)
+    # ce qui a tranché et pourquoi, ce qui a été vérifié et avec quelles limites,
+    # ce qui a été attaqué et ce qui subsiste, et chaque non-appel avec sa condition
+PLACER_ET_NOMMER_LE_FICHIER ; RESTITUER_EN_BREF
+FIN — le système s'arrête. Faire relire, approuver ou exécuter n'est pas une étape.</code></pre></details>
+<p class="note">Le tri des retours de la seconde relecture est obligatoire : ce que le plan aurait dû décider redevient une entrée ; ce que le destinataire lira ou vérifiera de toute façon fait l'objet d'un refus écrit et motivé. Sans ce tri, la relecture ne fait qu'épaissir le plan. Les retours de la première relecture ne sont pas triés de la même façon : elle dispose des critères d'acceptation et du besoin, donc ce qu'elle relève est un défaut au regard de ces critères et devient une entrée sans filtre.<br><br><strong>Le repli sur une option écartée.</strong> Lorsque la vérification de faisabilité par l'exécutant échoue, le choix qui avait été tranché n'est pas rejoué : les options écartées ont été conservées avec leur viabilité, et la suivante est reprise pour que cette seule vérification soit refaite. Si toutes les options conservées échouent à leur tour, le champ est épuisé, et ce cas est traité comme celui d'une confrontation où aucune proposition ne tient : le point passe à l'utilisateur.<br><br>Une entrée ouverte à ce stade ne déclenche pas de traitement particulier : elle repart vers le bloc compétent selon sa nature — prémisse fausse au niveau 1, fait douteux à l'établissement, décision mal fondée à la mise en concurrence, étape trop large au sous-plan, défaut de rédaction corrigé sur place.</p>
+</section>
+
+<section id="boucles">
+  <h2 class="sec">Boucles et terminaison</h2>
+  <p>Aucune reprise n'est déclenchée par une appréciation : chacune l'est par un constat nommé, qui désigne lui-même le point de reprise. Aucune boucle ne comporte de budget ni de nombre d'essais maximum. Chacune termine parce qu'une quantité croît ou décroît strictement, ce qui se vérifie par lecture du registre.</p>
+  <div class="tw"><table class="boucles">
+    <thead><tr><th>Boucle</th><th>Condition de déclenchement</th><th>Point de reprise</th><th>Argument de terminaison</th></tr></thead>
+    <tbody><tr><th scope="row">1 · Fidélité de la cible</th><td>La cible peut être atteinte sans produire l'effet recherché</td><td>La lecture du problème et la formulation de la cible</td><td>Chaque passage ajoute un critère ou une contrainte et n'en retire aucun. L'ensemble des cibles admissibles se restreint strictement ; son épuisement est constaté et soumis à l'utilisateur.</td></tr>
+<tr><th scope="row">2 · Établissement d'un fait</th><td>Le moyen employé n'aboutit pas</td><td>Le choix du moyen suivant</td><td>L'ensemble des moyens est fini et décroît strictement. Son épuisement ne clôt rien : il oriente vers un autre traitement.</td></tr>
+<tr><th scope="row">3 · Réouverture par un fait</th><td>Un fait contredit une hypothèse explicitée par une décision close</td><td>Cette décision seule — ni les décisions voisines, ni l'amont</td><td>Le fait doit être absent du registre des faits, ce qui se vérifie par lecture ; et ce registre ne fait que croître.</td></tr>
+<tr><th scope="row">4 · Itération</th><td>L'une des quatre conditions de sortie n'est pas réunie</td><td>Aucun — c'est le moteur du traitement</td><td>Une réécriture suppose qu'une décision close ait modifié l'enchaînement. Les décisions closes sont en nombre fini et ne se rouvrent que par la boucle 3, elle-même strictement croissante.</td></tr>
+<tr><th scope="row">5 · Renégociation d'un sous-plan</th><td>Le sous-plan est inexécutable tel qu'il est défini, et désigne le terme en cause</td><td>D'un seul niveau : celui qui a défini le sous-plan</td><td>Une renégociation ne peut que figer un degré de liberté, jamais en restituer. Le nombre de degrés libres décroît strictement. Relâcher un terme déjà figé relève de l'escalade, non de la boucle.</td></tr>
+<tr><th scope="row">6 · Descente en sous-plans</th><td>Une étape dont le critère de réussite ne s'énonce pas en un seul observable</td><td>Aucun — c'est une descente</td><td>Le périmètre d'un sous-plan est strictement contenu dans celui de son parent. La condition de découpe finit donc par être fausse. Aucune profondeur maximale n'est imposée.</td></tr></tbody>
+  </table></div>
+</section>
+
+<section id="invariants">
+  <h2 class="sec">Invariants</h2>
+  <p>Vrais à tout instant du traitement, et pour la plupart vérifiables par lecture du registre.</p>
+  <ul class="inv"><li><span class="ik">I1</span><span>Le registre est vide à l'émission du plan. Vérifiable par lecture.</span></li>
+<li><span class="ik">I2</span><span>Le traitement ne s'interrompt jamais de sa propre autorité. Seule exception : le refus à l'entrée, lorsqu'aucun problème de planification n'est posé.</span></li>
+<li><span class="ik">I3</span><span>Toute pièce du plan a une origine écrite. Une pièce sans origine est retirée.</span></li>
+<li><span class="ik">I4</span><span>Le registre des faits et l'ensemble des termes figés ne font que croître.</span></li>
+<li><span class="ik">I5</span><span>Aucun compteur, aucun plafond, aucun budget.</span></li>
+<li><span class="ik">I6</span><span>L'appareil de risque n'est atteignable que par un point d'engagement effectif, et l'appareil d'autorisation que par un tel point irréversible ou une obligation formelle recensée. Ni l'un ni l'autre ne peut structurellement occuper le centre.</span></li>
+<li><span class="ik">I7</span><span>Aucune exclusion définitive de fonction : tout non-appel est assorti d'une condition observable, écrite.</span></li>
+<li><span class="ik">I8</span><span>Le système n'agit que par action réversible et bornée, jamais sur ce que le plan engage.</span></li>
+<li><span class="ik">I9</span><span>L'utilisateur n'est sollicité qu'une fois par itération, en un envoi unique, et jamais sur ce que le système peut établir seul.</span></li>
+<li><span class="ik">I10</span><span>La priorité ordonne le travail sans rien écarter : aucune entrée n'est close par déclassement.</span></li>
+<li><span class="ik">I11</span><span>Le crible ne produit rien. C'est ce qui lui permet d'être exhaustif sans être coûteux.</span></li>
+<li><span class="ik">I12</span><span>L'architecture ne porte aucune trace du format du plan : le modèle de document est une entrée du système.</span></li></ul>
+</section>
+
+<section id="limites">
+  <h2 class="sec">Limites connues</h2>
+  <p>Un seul point. Ce qui relève des moyens employés — indépendance des concurrents, double lecture du crible, nombre d'agents ouverts — n'y figure pas : c'est l'affaire des techniques et de la configuration, pas de l'architecture.</p>
+  <div class="opens"><div class="open-item"><h4>La condition d'envoi des questions repose sur une appréciation</h4><p>Les questions destinées à l'utilisateur partent lorsque plus rien ne peut avancer sans lui. Cette condition est présentée comme un état vérifiable, mais rien ne prouve qu'une entrée ne pouvait pas avancer davantage. Conséquence : un traitement expéditif sollicitera l'utilisateur sur des points qu'il aurait pu établir seul. C'est le seul endroit de l'architecture qui annonce un état vérifiable sans pouvoir le prouver.</p></div></div>
+</section>
+</main>
+
+<footer>
+  <span>plan-suite</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var KW = /(?:^|(?<=[\s(:;,]))(SI|SINON|POUR|TANT QUE|RÉPÉTER|RETOURNER|SORTIR|FIN|ALORS|chaque|INVARIANT|GARDE|TRI DES RETOURS)(?=[\s:,(]|$)/g;
+  var FN = /\b([A-Z][A-Z0-9_]*_[A-Z0-9_]+)\b/g;
+  var GU = /(«[^»]*»)/g;
+  document.querySelectorAll('pre.listing > code').forEach(function(el){
+    var out = el.textContent.split('\n').map(function(line){
+      var s = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      var i = s.indexOf('#');
+      var code = i === -1 ? s : s.slice(0,i);
+      var cm   = i === -1 ? '' : s.slice(i);
+      code = code.replace(FN,'<span class="fn">$1</span>')
+                 .replace(KW,function(m0,k){return m0.replace(k,'<span class="kw">'+k+'</span>');})
+                 .replace(GU,'<span class="gu">$1</span>');
+      if (cm) cm = '<span class="cm">' + cm.replace(FN,'<span class="fn">$1</span>') + '</span>';
+      return code + cm;
+    }).join('\n');
+    el.innerHTML = out;
+  });
+})();
+</script>
+
+<script>
+/* Surbrillance, dans le sommaire, de la section en cours de lecture. */
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+  if (!links.length) return;
+  var map = {}, targets = [];
+  links.forEach(function(a){
+    var id = (a.getAttribute('href') || '').slice(1);
+    var el = id && document.getElementById(id);
+    if (el) { map[id] = a; targets.push(el); }
+  });
+  var current = null;
+  function mark(a){
+    if (!a || a === current) return;
+    if (current) current.classList.remove('on');
+    current = a; a.classList.add('on');
+    if (window.innerWidth >= 1060) {
+      var rail = a.parentNode, r = a.getBoundingClientRect(), b = rail.getBoundingClientRect();
+      if (r.top < b.top || r.bottom > b.bottom) a.scrollIntoView({ block: 'nearest' });
+    }
+  }
+  function update(){
+    var best = targets[0], bestTop = -Infinity;
+    targets.forEach(function(t){
+      var top = t.getBoundingClientRect().top - 96;
+      if (top <= 0 && top > bestTop) { bestTop = top; best = t; }
+    });
+    if (best) mark(map[best.id]);
+  }
+  var pending = false;
+  window.addEventListener('scroll', function(){
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function(){ update(); pending = false; });
+  }, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+})();
+</script>
