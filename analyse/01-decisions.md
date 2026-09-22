@@ -469,6 +469,30 @@ Même logique que D-29 pour la structure, avec une différence : la confrontatio
 
 ---
 
+## D-35 — Le pseudo-code est tenu à jour avec l'architecture, et le document n'a qu'un seul vocabulaire
+
+Le pseudo-code produit par l'agent Opus est antérieur à plusieurs décisions.
+Il est réécrit sur les passages où il contredit l'architecture arrêtée, au lieu d'être conservé tel quel.
+
+Sept passages ont été réécrits.
+L'ordre des attaques, qui était fixé par la fragilité de l'hypothèse, ne l'est plus.
+L'attaque du champ entier devient un marquage par intersection des listes d'hypothèses, et non une seconde épreuve.
+Le constat qu'aucune proposition ne tient revient à l'arbitre, après l'arbitrage, et non au planificateur avant lui.
+L'épuisement des angles d'attaque avec une indépendance faible est traité (D-31).
+Le niveau 1 et le niveau 2 reçoivent leur branche de reprise (D-29, D-34).
+La réponse qui ne tranche pas reçoit sa chaîne complète (D-32, D-33).
+La réécriture reçoit le cas où aucune décision close ne change l'enchaînement.
+Une question du crible à laquelle la lecture ne sait pas répondre se clôt par une entrée au registre, comme les autres.
+
+Conséquence sur le document : la table de correspondance entre le vocabulaire neutre et le vocabulaire du pseudo-code n'a plus d'objet, puisqu'il n'y a plus qu'un vocabulaire.
+Elle est remplacée par un lexique simple.
+Le terme « point de synchronisation » est abandonné au profit de « envoi des questions », qui est le nom du bloc.
+Le terme « fait pivot » est abandonné au profit de « fait déterminant ».
+
+Le fichier source du rapport de l'agent n'est pas modifié : les réécritures sont portées par le générateur, chacune assortie d'une assertion qui échoue si le passage visé a bougé.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
