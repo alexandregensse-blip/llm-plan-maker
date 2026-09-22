@@ -493,6 +493,47 @@ Le fichier source du rapport de l'agent n'est pas modifié : les réécritures s
 
 ---
 
+## D-36 — Quatre points tranchés à la relecture par blocs
+
+**La conservation de l'enchaînement repose sur un constat nommé, pas sur une appréciation.**
+L'enchaînement arrêté lors d'une passe antérieure est rejoué si et seulement si l'un de trois constats se lit au registre : la cible a changé, les critères d'acceptation ont changé, ou un fait établi depuis contredit une hypothèse que cet enchaînement avait nommée.
+Le troisième constat se lit sur le même index que la boucle 3, la liste écrite des hypothèses.
+Sans cela, la règle « aucune reprise n'est déclenchée par une appréciation » était contredite par le bloc 03 lui-même.
+
+**Une proposition dont le socle n'est pas établi n'est pas attaquée.**
+Quand une hypothèse d'une proposition est une inconnue non levée, le fait est établi avant toute attaque.
+Attaquer une proposition dont le socle n'est pas établi ne rend qu'un résultat conditionnel — elle tombe si l'hypothèse est fausse — c'est-à-dire rien.
+La confrontation entière attend, puisque toutes les propositions sont attaquées avant tout arbitrage.
+
+**Une réponse partielle n'est pas une absence de réponse.**
+Ce qui est répondu clôt les entrées correspondantes.
+Chaque question laissée sans réponse est traitée exactement comme une réponse qui ne tranche pas, c'est-à-dire par la chaîne de D-32 et D-33.
+L'absence totale de réponse reste l'attente.
+
+**Une entrée retypée en fait à établir est levée à l'itération suivante.**
+La résorption de l'itération courante est déjà passée au moment de l'envoi des questions.
+L'entrée change de type, reste ouverte, et suit le traitement ordinaire de son nouveau type au tour suivant.
+
+**Un cinquième point a été écarté.**
+Les relecteurs signalaient qu'une étape retirée faute d'origine pouvait laisser sans prérequis une étape qui en dépendait.
+Le cas est vide : une étape qui sert de prérequis à une autre tient son origine de la décision qui a produit celle-ci.
+Rien n'a été ajouté.
+
+---
+
+## D-37 — Le document n'a qu'un vocabulaire, et les cinq types n'ont qu'un nom chacun
+
+Le pseudo-code disait « pas » là où tout le reste du document dit « étape ».
+Les cinq types d'entrée portaient trois jeux de noms : ceux du tableau, ceux du pseudo-code, ceux des sous-sections du bloc 05.
+Les noms retenus sont ceux du pseudo-code, qui sont les noms des types eux-mêmes : fait manquant, à soumettre, décision, sous-plan, branche.
+
+Le lexique reçoit quatre termes que les blocs employaient sans les définir : étape, pièce, point d'engagement, fait périssable.
+
+Trois fautes mécaniques du renommage ont été corrigées, toutes du même mécanisme : le mot substitué n'a ni le genre ni l'initiale du mot d'origine.
+Le script de vérification contrôle désormais les élisions, les accords, les termes abandonnés et l'emploi de « pas » au sens d'étape.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
