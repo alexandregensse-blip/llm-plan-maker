@@ -403,6 +403,20 @@ Sans fait nouveau, le point remonte à l'utilisateur.
 
 ---
 
+## D-29 — La structure d'une passe antérieure est conservée par défaut
+
+Si les éléments nouveaux nécessitent de changer la structure, on la refait.
+Si le système juge qu'ils ne le nécessitent pas, on ne la refait pas : elle passe par le contrôle final, comme à chaque fois.
+
+Les éléments nouveaux sont observables : faits établis depuis la passe précédente, réponses de l'utilisateur, cible ou critères d'acceptation modifiés.
+La structure n'est donc pas remise en concurrence par principe à chaque exécution du skill — sans quoi trois passes referaient trois fois le travail de structuration.
+Le filet n'est pas une confrontation supplémentaire, c'est le contrôle final, qui porte de toute façon sur la structure.
+
+Cette décision ne vaut que lorsque le registre de la passe antérieure est disponible, c'est-à-dire pour un plan issu du skill lui-même.
+Un plan d'origine étrangère ne porte aucune structure enregistrée : le niveau 2 s'exécute.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
