@@ -368,6 +368,29 @@ Contrepoids indispensable au principe « l'utilisateur décide » : sans lui, le
 
 ---
 
+## D-27 — Arbitrage des fonctions manquantes relevées par l'architecture
+
+Cinq opérations sans fonction dédiée ont été soumises ; trois deviennent des fonctions, deux sont absorbées.
+
+**Ajoutées.**
+`LIRE_MODELE_DE_PLAN` — le format du plan est une entrée du système et rien n'allait le chercher.
+`CONTROLER_REPORT_A_L_EXECUTION` — le contrôle du classement d'une inconnue en « exécution ».
+C'est le principe le plus fort du plan, il ne doit pas dépendre d'un montage de quatre fonctions.
+`REPRENDRE_PASSE_PRECEDENTE` — reprise d'un plan issu du skill lui-même, avec son registre.
+
+**Absorbées.**
+Le contrôle du brief avant envoi n'est pas une fonction : c'est une technique de rédaction du brief, et la définition de `REDIGER_BRIEF_AGENT` l'intègre.
+L'explication de l'enjeu n'est pas une fonction : `FORMULER_QUESTION_ACTIONNABLE` doit exposer ce qui change selon la réponse.
+
+**Deux cas distincts en entrée**, et c'est ce qui motive `REPRENDRE_PASSE_PRECEDENTE` :
+un plan produit par une exécution antérieure du skill arrive au format connu, avec son registre — on poursuit les itérations avec les informations nouvelles ;
+un plan d'origine étrangère arrive sans registre et dans un format inconnu — `AMORCER_DEPUIS_PLAN_EXISTANT` en dérive le besoin.
+Confondre les deux fait repayer ce qui était déjà acquis.
+
+Le jeu passe à 133 fonctions.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut

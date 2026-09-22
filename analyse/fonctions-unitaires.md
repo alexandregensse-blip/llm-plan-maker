@@ -1,6 +1,6 @@
 # Fonctions unitaires disponibles
 
-On dispose d'un système qui met à disposition les **130 fonctions unitaires** listées ci-dessous.
+On dispose d'un système qui met à disposition les **133 fonctions unitaires** listées ci-dessous.
 Chacune est atomique.
 Chacune peut être appelée **autant de fois que nécessaire, à n'importe quel moment**, sur n'importe quel objet.
 
@@ -148,7 +148,7 @@ Recenser ce que la demande entraîne de sûr hors de son périmètre — surcoû
 Offrir à l'utilisateur de désigner qui exécute quoi. Jamais produit d'office.
 
 **`FORMULER_QUESTION_ACTIONNABLE`**
-Rendre une question autonome et tranchable par celui qui doit y répondre.
+Poser une question tranchable, et exposer ce qui se joue derrière elle : ce qui change selon la réponse, pour que l'utilisateur puisse répondre même lorsqu'il ne connaissait pas l'enjeu.
 
 **`RESPECTER_CADRE_AUTORISE`**
 Respecter les techniques autorisées et le processus établi ; ne pas improviser de lancement d'agent non prévu.
@@ -219,6 +219,9 @@ Repérer que deux sources ne disent pas la même chose.
 **`ORDONNER_INCONNUES_SANS_ECARTER`**
 Classer les inconnues par ce qu'elles peuvent changer et par le coût de leur levée. On ordonne, on n'écarte pas.
 
+**`LIRE_MODELE_DE_PLAN`**
+Lire le modèle de document imposé au plan livré, avant toute rédaction.
+
 **`EPROUVER_AUTONOMIE_DU_TEXTE`**
 Soumettre le plan seul à un lecteur qui n'a rien vu de l'enquête, et lui demander non pas de l'exécuter mais de dire où il devrait redemander quelque chose.
 
@@ -230,6 +233,9 @@ Recenser ce que le plan n'a pas le droit de franchir.
 
 **`GARANTIR_DIVERSITE_METHODE`**
 S'assurer que les options diffèrent par la méthode ou l'angle d'optimisation, et non par le vocabulaire.
+
+**`CONTROLER_REPORT_A_L_EXECUTION`**
+Vérifier qu'une inconnue classée « à lever seulement à l'exécution » l'est à bon droit : indéterminable maintenant, aucun moyen disponible, signal de révélation nommable, portée limitée — et le classement n'est pas auto-confirmé.
 
 **`VERIFIER_FAISABILITE_PAR_EXECUTANT`**
 Vérifier que celui qui recevra le plan a les accès, outils, compétences et contexte que le plan présuppose.
@@ -248,6 +254,9 @@ Présenter deux options de haut niveau côte à côte quand l'utilisateur doit t
 
 **`QUALIFIER_PORTEE_DECISION`**
 Dire ce qui change si la réponse à ce point est fausse.
+
+**`REPRENDRE_PASSE_PRECEDENTE`**
+Reconnaître un plan issu d'une exécution antérieure du skill, et reprendre son registre : faits établis avec leur provenance, décisions closes, limites énoncées — sans redériver le besoin ni réétablir ce qui tient.
 
 **`AMORCER_DEPUIS_PLAN_EXISTANT`**
 Partir d'un plan existant plutôt que d'une demande, en dérivant le besoin du plan lui-même.
@@ -277,7 +286,7 @@ Chercher ce qui ferait échouer toutes les options à la fois, et les conditions
 Identifier les étapes qui peuvent être menées de front.
 
 **`REDIGER_BRIEF_AGENT`**
-Donner à un agent le périmètre, les faits établis, la question et le format attendu — et rien qui oriente. Ce qui est déjà établi y voyage, pour que personne ne refasse le travail. Un agent qui juge reçoit les critères ET le besoin.
+Donner à un agent le périmètre, les faits établis, la question et le format attendu — et rien qui oriente. Ce qui est déjà établi y voyage, pour que personne ne refasse le travail. Un agent qui juge reçoit les critères ET le besoin, puis relire ce brief pour en retirer ce qui oriente : ordre de présentation, qualificatif, fait donné avec sa conclusion, trace d'une proposition rivale.
 
 **`DISTINGUER_ETAPE_ESSENTIELLE_ET_MECANIQUE`**
 Distinguer l'étape qui mérite d'exister de celle qui n'est que la suite automatique d'une autre.

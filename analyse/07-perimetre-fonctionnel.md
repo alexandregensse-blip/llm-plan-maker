@@ -10,6 +10,10 @@ d'autre. Les principes qui gouvernent l'ensemble sont en fin de document.
 **Axe 1.1 · Applicabilité**
 - 1.1.1 Déclinaison — énoncer « il n'y a pas de problème de planification ici » et s'arrêter
 
+**Axe 1.1bis · Reprise d'un travail antérieur**
+- 1.1bis.1 Reprise d'une passe antérieure du skill — plan et registre au format connu
+- 1.1bis.2 Amorçage depuis un plan étranger — format inconnu, le besoin en est dérivé
+
 **Axe 1.2 · Reconnaissance du terrain**
 - 1.2.1 Capacités disponibles
 - 1.2.2 Forme du travail
@@ -67,6 +71,7 @@ d'autre. Les principes qui gouvernent l'ensemble sont en fin de document.
 - 3.2.2 Matérialité
 - 3.2.3 Priorisation — ordonne, n'écarte pas
 - 3.2.4 Classement construction / exécution
+- 3.2.5 Contrôle du report à l'exécution — voir D-27
 
 **Axe 3.3 · Investigation**
 - 3.3.1 Choix du moyen
@@ -225,6 +230,7 @@ d'autre. Les principes qui gouvernent l'ensemble sont en fin de document.
 - 8.1.2 Actionnabilité automatique
 
 **Axe 8.2 · Rédaction**
+- 8.2.0 Lecture du modèle de plan imposé — voir D-27
 - 8.2.1 Rédaction du plan
 - 8.2.2 Rédaction de la traçabilité — fichier séparé
 - 8.2.3 Mise en regard d'alternatives
