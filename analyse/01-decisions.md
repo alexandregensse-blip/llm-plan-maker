@@ -437,6 +437,38 @@ Le principe « un plan livré ne contient jamais de point ouvert » porte sur le
 
 ---
 
+## D-32 — Une réponse qui ne tranche pas
+
+L'utilisateur répond « je ne sais pas », ou rend une réponse inexploitable.
+Premier réflexe : vérifier si un moyen disponible permet d'établir le point sans lui.
+Si oui, l'entrée change de type et devient un fait à établir — elle ne lui est pas reposée.
+Sinon, la question est reformulée avec l'énoncé de ce qui change selon la réponse, et elle repart **dans le même échange** : l'utilisateur est là, on ne le fait pas attendre l'itération suivante.
+
+La promesse « une interruption par itération » porte sur le fait de ne pas revenir le chercher plus tard, pas sur le nombre d'échanges dans une conversation déjà ouverte.
+
+---
+
+## D-33 — Une entrée déjà reformulée qui reçoit une seconde réponse qui ne tranche pas
+
+On ne reformule pas une troisième fois.
+Cela signifie que la question porte au-delà de ce que l'utilisateur peut savoir, et la réponse n'est pas d'insister.
+On change d'objet : on l'interroge sur son **besoin** — ce qu'il cherche à obtenir — plutôt que sur la manière d'y parvenir.
+Les réponses obtenues alimentent le niveau 1.
+
+L'état « déjà reformulée » est écrit au registre : ce n'est pas un compteur d'essais, c'est une propriété observable de l'entrée.
+
+---
+
+## D-34 — Un besoin arrêté lors d'une passe antérieure
+
+Il est confronté à la demande telle qu'elle arrive, éventuellement reprécisée par l'utilisateur au moment où il relance le système.
+Si rien dans cette demande ne le contredit, le besoin est conservé avec sa cible et ses critères, et le niveau 1 n'est pas rejoué.
+S'il y a contradiction, les lectures du besoin sont remises en concurrence.
+
+Même logique que D-29 pour la structure, avec une différence : la confrontation à la demande nouvelle est systématique, parce que c'est précisément là que l'utilisateur dit ce qui n'allait pas.
+
+---
+
 ## Encore ouvert
 
 - Définition exacte des tiers et du tier par défaut
